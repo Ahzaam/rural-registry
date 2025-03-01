@@ -139,6 +139,7 @@ const Login: React.FC = () => {
                     fullWidth
                     required
                     variant="outlined"
+                    autoComplete="username"
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "12px",
@@ -153,6 +154,7 @@ const Login: React.FC = () => {
                     fullWidth
                     required
                     variant="outlined"
+                    autoComplete="current-password"
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "12px",

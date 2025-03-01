@@ -128,21 +128,33 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ currentUser }) => {
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: 2,
-            padding: { xs: 1.5, md: 2 },
-            borderRadius: "16px",
-            backgroundColor: "rgba(255, 255, 255, 0.7)",
-            backdropFilter: "blur(10px)",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-            border: "1px solid rgba(255, 255, 255, 0.6)",
+            gap: 2.5,
+            padding: { xs: 2, md: 2.5 },
+            borderRadius: "20px",
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            backdropFilter: "blur(20px)",
+            boxShadow: "0 4px 24px rgba(0, 0, 0, 0.06)",
+            border: "1px solid rgba(255, 255, 255, 0.8)",
+            transition: "all 0.3s ease",
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: "0 6px 28px rgba(0, 0, 0, 0.08)",
+            }
           }}
         >
           <Avatar 
             src={currentUser?.photoURL || undefined}
             sx={{ 
+              width: 48,
+              height: 48,
               bgcolor: theme.palette.primary.main,
-              boxShadow: "0 2px 8px rgba(0, 112, 201, 0.25)",
-              border: "2px solid white"
+              boxShadow: "0 4px 12px rgba(0, 112, 201, 0.2)",
+              border: "2px solid white",
+              transition: "all 0.3s ease",
+              '&:hover': {
+                transform: 'scale(1.05)',
+                boxShadow: "0 4px 16px rgba(0, 112, 201, 0.3)",
+              }
             }}
           >
             {getUserInitials()}
@@ -153,40 +165,51 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ currentUser }) => {
               variant="body1"
               sx={{
                 fontWeight: 600,
-                fontSize: "0.95rem",
+                fontSize: "1rem",
                 color: "#1d1d1f",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
+                mb: 0.5
               }}
             >
               {currentUser?.displayName || "User"}
             </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Box sx={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: 2 
+            }}>
               <Typography
                 variant="body2"
                 sx={{
                   color: "#86868b",
                   fontWeight: 500,
-                  fontSize: "0.8rem",
+                  fontSize: "0.85rem",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
+                  maxWidth: "180px"
                 }}
               >
                 {currentUser?.email || ""}
               </Typography>
               
               <AnimatedButton
-                variant="text"
+                variant="outlined"
                 size="small"
                 onClick={logout}
                 sx={{
-                  fontSize: "0.8rem",
-                  color: theme.palette.primary.main,
-                  minWidth: "auto",
-                  "&:hover": {
-                    backgroundColor: "rgba(0, 112, 201, 0.08)",
+                  borderRadius: '12px',
+                  borderColor: 'rgba(0, 112, 201, 0.5)',
+                  color: '#0070c9',
+                  fontSize: '0.8rem',
+                  py: 0.5,
+                  px: 2,
+                  minWidth: 'auto',
+                  '&:hover': {
+                    borderColor: '#0070c9',
+                    backgroundColor: 'rgba(0, 112, 201, 0.04)'
                   }
                 }}
               >
