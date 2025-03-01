@@ -1,26 +1,16 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if user is authenticated and is an admin
-    function isAdmin() {
+    // Function to check if the user is an admin
+     function isAdmin() {
       return request.auth != null && 
         exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
-
-    // Match all family documents
-    match /families/{familyId} {
-      // Only allow operations if user is admin
-      allow read, write: if isAdmin();
-    }
-
-    // Allow admins to read their own admin document
-    match /admins/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Default deny all other access
+    // Match all documents in all collections
     match /{document=**} {
-      allow read, write: if false;
+      // Only allow read and write if the user is an admin
+      allow read, write: if isAdmin();
     }
   }
 }

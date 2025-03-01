@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Box, Typography, Button, IconButton, AppBar, Toolbar, Paper, Slide } from "@mui/material";
-import { Logout as LogoutIcon, QrCode as QrCodeIcon, Close } from "@mui/icons-material";
+import { Logout as LogoutIcon, Close } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import QRScanner from "../QRScanner";
@@ -13,94 +13,6 @@ interface DashboardHeaderProps {
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ currentUser }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const [showQRScanner, setShowQRScanner] = useState(false);
-  const [scannedFamily, setScannedFamily] = useState<Family | null>(null);
-  const [showFamilyPanel, setShowFamilyPanel] = useState(false);
-
-  const ScannerOverlay = () => (
-    <Box
-      sx={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bgcolor: "background.paper",
-        zIndex: 9999,
-      }}
-    >
-      <AppBar position="static" color="transparent" elevation={0}>
-        <Toolbar>
-          <IconButton
-            edge="start"
-            onClick={() => {
-              setShowQRScanner(false);
-              setScannedFamily(null);
-              setShowFamilyPanel(false);
-            }}
-          >
-            <Close />
-          </IconButton>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Scan QR Code
-          </Typography>
-        </Toolbar>
-      </AppBar>
-
-      <QRScanner />
-
-      <Slide direction="up" in={showFamilyPanel}>
-        <Paper
-          sx={{
-            position: "fixed",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            p: 2,
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
-            boxShadow: 3,
-          }}
-        >
-          {scannedFamily && (
-            <>
-              <Typography variant="h6" gutterBottom>
-                {scannedFamily.headOfFamily.firstName} {scannedFamily.headOfFamily.lastName}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Home ID: {scannedFamily.homeId}
-              </Typography>
-              <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
-                <Button
-                  variant="contained"
-                  fullWidth
-                  sx={{ flex: 3 }}
-                  onClick={() => {
-                    navigate(`/family/${scannedFamily.id}`);
-                    setShowQRScanner(false);
-                    setScannedFamily(null);
-                    setShowFamilyPanel(false);
-                  }}
-                >
-                  Visit Profile
-                </Button>
-                <Button
-                  variant="outlined"
-                  sx={{ flex: 1 }}
-                  onClick={() => {
-                    setShowFamilyPanel(false);
-                    setScannedFamily(null);
-                  }}
-                >
-                  Cancel
-                </Button>
-              </Box>
-            </>
-          )}
-        </Paper>
-      </Slide>
-    </Box>
-  );
 
   return (
     <Box
@@ -176,27 +88,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ currentUser }) => {
         >
           Logout
         </Button>
-        <Button
-          variant="contained"
-          size="small"
-          onClick={() => setShowQRScanner(true)}
-          startIcon={<QrCodeIcon />}
-          sx={{
-            borderRadius: "20px",
-            backgroundColor: "#0070c9",
-            color: "#fff",
-            px: { xs: 2, md: 3 },
-            "&:hover": {
-              backgroundColor: "#005ea3",
-              transform: "scale(1.02)",
-            },
-            transition: "all 0.2s ease-in-out",
-          }}
-        >
-          Scan QR
-        </Button>
       </Box>
-      {showQRScanner && <ScannerOverlay />}
     </Box>
   );
 };

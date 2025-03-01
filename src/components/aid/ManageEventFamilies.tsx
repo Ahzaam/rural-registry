@@ -221,8 +221,8 @@ export const ManageEventFamilies = () => {
       }
       setScannedFamily(family);
       setShowFamilyPanel(true);
+      // Don't clear tempHomeId here
     }
-    setTempHomeId("");
   };
 
   const handleManualSubmit = async () => {
@@ -255,6 +255,7 @@ export const ManageEventFamilies = () => {
               setScannedFamily(null);
               setShowFamilyPanel(false);
               setManualModeInScanner(false);
+              setTempHomeId(""); // Clear on manual close
             }}
           >
             <Close />
@@ -272,9 +273,15 @@ export const ManageEventFamilies = () => {
         <Box sx={{ p: 2 }}>
           <TextField
             fullWidth
+            autoFocus
             label="Enter Home ID"
             value={tempHomeId}
             onChange={(e) => setTempHomeId(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleManualSearch();
+              }
+            }}
             sx={{ mb: 2 }}
           />
           <Button fullWidth variant="contained" onClick={handleManualSearch} sx={{ mb: 1 }}>

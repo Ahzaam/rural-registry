@@ -73,24 +73,24 @@ const SearchActions: React.FC<SearchActionsProps> = ({ searchTerm, onSearchChang
             width: { xs: '100%', md: 'auto' }
           }}
         >
-          <Button
+          <Button 
             variant="outlined"
             startIcon={<QrCodeIcon />}
             onClick={() => navigate('/scanner')}
             fullWidth
             sx={{ 
-              borderRadius: '15px',
+              borderRadius: '12px',
               borderColor: '#0070c9',
               color: '#0070c9',
-              padding: '12px 24px',
+              padding: '8px 16px',
               textTransform: 'none',
-              fontWeight: 600,
+              fontWeight: 500,
               flex: { xs: 1, md: 'initial' },
-              minWidth: { xs: 0, md: '120px' },
+              minWidth: { xs: 0, md: '100px' },
               '&:hover': { 
                 borderColor: '#005ea3',
                 backgroundColor: 'rgba(0, 112, 201, 0.04)',
-                transform: 'translateY(-2px)'
+                transform: 'translateY(-1px)'
               },
               transition: 'all 0.2s ease-in-out'
             }}
@@ -99,22 +99,21 @@ const SearchActions: React.FC<SearchActionsProps> = ({ searchTerm, onSearchChang
           </Button>
           <Button
             variant="outlined"
-            // startIcon={<VolunteerIcon />}
             onClick={() => navigate('/aid-events')}
             fullWidth
             sx={{ 
-              borderRadius: '15px',
+              borderRadius: '12px',
               borderColor: '#0070c9',
               color: '#0070c9',
-              padding: '12px 24px',
+              padding: '8px 16px',
               textTransform: 'none',
-              fontWeight: 600,
+              fontWeight: 500,
               flex: { xs: 1, md: 'initial' },
-              minWidth: { xs: 0, md: '120px' },
+              minWidth: { xs: 0, md: '100px' },
               '&:hover': { 
                 borderColor: '#005ea3',
                 backgroundColor: 'rgba(0, 112, 201, 0.04)',
-                transform: 'translateY(-2px)'
+                transform: 'translateY(-1px)'
               },
               transition: 'all 0.2s ease-in-out'
             }}
@@ -128,18 +127,18 @@ const SearchActions: React.FC<SearchActionsProps> = ({ searchTerm, onSearchChang
             to="/families/new"
             fullWidth
             sx={{ 
-              borderRadius: '15px',
+              borderRadius: '12px',
               backgroundColor: '#0070c9',
-              padding: '12px 24px',
+              padding: '8px 16px',
               textTransform: 'none',
-              fontWeight: 600,
+              fontWeight: 500,
               flex: { xs: 1, md: 'initial' },
-              minWidth: { xs: 0, md: '160px' },
-              boxShadow: '0 4px 14px rgba(0, 112, 201, 0.25)',
+              minWidth: { xs: 0, md: '120px' },
+              boxShadow: '0 2px 8px rgba(0, 112, 201, 0.25)',
               '&:hover': { 
                 backgroundColor: '#005ea3',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 20px rgba(0, 112, 201, 0.35)'
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(0, 112, 201, 0.35)'
               },
               transition: 'all 0.2s ease-in-out'
             }}

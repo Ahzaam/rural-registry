@@ -1,6 +1,6 @@
-import React from 'react';
-import { Card, CardContent, Stack, Box, Typography, Button, Divider } from '@mui/material';
-import { Home as HomeIcon, Person as PersonIcon, LocationOn as LocationIcon, People as PeopleIcon, Delete as DeleteIcon, GridView as GridViewIcon } from '@mui/icons-material';
+import React, { useState } from 'react';
+import { Card, CardContent, Stack, Box, Typography, Button, Divider, Collapse, IconButton } from '@mui/material';
+import { Home as HomeIcon, Person as PersonIcon, LocationOn as LocationIcon, People as PeopleIcon, Delete as DeleteIcon, GridView as GridViewIcon, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Family } from '../../types/types';
 
@@ -11,6 +11,7 @@ interface FamilyCardProps {
 
 const FamilyCard: React.FC<FamilyCardProps> = ({ family, onDelete }) => {
   const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <Card 
@@ -22,36 +23,47 @@ const FamilyCard: React.FC<FamilyCardProps> = ({ family, onDelete }) => {
         transition: 'transform 0.2s ease'
       }}
     >
-      <CardContent>
+      <CardContent sx={{ p: 2 }}>
         <Stack spacing={2}>
-          {/* Household Info */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <HomeIcon sx={{ color: '#0070c9', fontSize: '1.2rem' }} />
-            <Box>
-              <Typography sx={{ 
-                fontWeight: 600,
-                fontSize: '1rem',
-                color: '#0070c9',
-              }}>
-                #{family.homeId}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box component="span" sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  backgroundColor: family.landOwnership === 'owned' ? '#34c759' : '#ff9f0a'
-                }} />
-                <Typography sx={{ fontSize: '0.875rem', color: '#86868b' }}>
-                  {family.landOwnership === 'owned' ? 'Owner' : 'Tenant'}
+          {/* Header - Always visible */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <HomeIcon sx={{ color: '#0070c9', fontSize: '1.2rem' }} />
+              <Box>
+                <Typography sx={{ 
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  color: '#0070c9',
+                }}>
+                  #{family.homeId}
                 </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box component="span" sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    backgroundColor: family.landOwnership === 'owned' ? '#34c759' : '#ff9f0a'
+                  }} />
+                  <Typography sx={{ fontSize: '0.875rem', color: '#86868b' }}>
+                    {family.landOwnership === 'owned' ? 'Owner' : 'Tenant'}
+                  </Typography>
+                </Box>
               </Box>
             </Box>
+            <IconButton 
+              onClick={() => setExpanded(!expanded)}
+              size="small"
+              sx={{ 
+                ml: 1,
+                color: '#86868b',
+                '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' }
+              }}
+            >
+              {expanded ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+            </IconButton>
           </Box>
 
-          <Divider />
-
-          {/* Head of Family */}
+          {/* Head of Family - Always visible */}
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
             <PersonIcon sx={{ color: '#86868b', fontSize: '1.2rem' }} />
             <Box>
@@ -64,68 +76,74 @@ const FamilyCard: React.FC<FamilyCardProps> = ({ family, onDelete }) => {
             </Box>
           </Box>
 
-          {/* Location & Contact */}
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-            <LocationIcon sx={{ color: '#86868b', fontSize: '1.2rem' }} />
-            <Box>
-              <Typography sx={{ fontSize: '0.875rem' }}>
-                {family.address}
-              </Typography>
-              {family.headOfFamily.contact && (
-                <Typography sx={{ 
-                  fontSize: '0.875rem', 
-                  color: '#0070c9',
-                  mt: 0.5
-                }}>
-                  {family.headOfFamily.contact}
-                </Typography>
-              )}
-            </Box>
-          </Box>
-
-          {/* Family Composition */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <PeopleIcon sx={{ color: '#86868b', fontSize: '1.2rem' }} />
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Box sx={{
-                backgroundColor: 'rgba(0, 112, 201, 0.1)',
-                color: '#0070c9',
-                borderRadius: '20px',
-                px: 1.5,
-                py: 0.5,
-                fontSize: '0.75rem',
-                fontWeight: 500
-              }}>
-                Adults: {1 + (family.spouse ? 1 : 0)}
+          {/* Expandable Content */}
+          <Collapse in={expanded} timeout="auto">
+            <Stack spacing={2}>
+              <Divider />
+              {/* Location & Contact */}
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                <LocationIcon sx={{ color: '#86868b', fontSize: '1.2rem' }} />
+                <Box>
+                  <Typography sx={{ fontSize: '0.875rem' }}>
+                    {family.address}
+                  </Typography>
+                  {family.headOfFamily.contact && (
+                    <Typography sx={{ 
+                      fontSize: '0.875rem', 
+                      color: '#0070c9',
+                      mt: 0.5
+                    }}>
+                      {family.headOfFamily.contact}
+                    </Typography>
+                  )}
+                </Box>
               </Box>
-              {family.children.length > 0 && (
-                <Box sx={{
-                  backgroundColor: 'rgba(88, 86, 214, 0.1)',
-                  color: '#5856d6',
-                  borderRadius: '20px',
-                  px: 1.5,
-                  py: 0.5,
-                  fontSize: '0.75rem',
-                  fontWeight: 500
-                }}>
-                  Children: {family.children.length}
+
+              {/* Family Composition */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <PeopleIcon sx={{ color: '#86868b', fontSize: '1.2rem' }} />
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  <Box sx={{
+                    backgroundColor: 'rgba(0, 112, 201, 0.1)',
+                    color: '#0070c9',
+                    borderRadius: '20px',
+                    px: 1.5,
+                    py: 0.5,
+                    fontSize: '0.75rem',
+                    fontWeight: 500
+                  }}>
+                    Adults: {1 + (family.spouse ? 1 : 0)}
+                  </Box>
+                  {family.children.length > 0 && (
+                    <Box sx={{
+                      backgroundColor: 'rgba(88, 86, 214, 0.1)',
+                      color: '#5856d6',
+                      borderRadius: '20px',
+                      px: 1.5,
+                      py: 0.5,
+                      fontSize: '0.75rem',
+                      fontWeight: 500
+                    }}>
+                      Children: {family.children.length}
+                    </Box>
+                  )}
+                  {family.otherMembers && family.otherMembers.length > 0 && (
+                    <Box sx={{
+                      backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                      color: '#34c759',
+                      borderRadius: '20px',
+                      px: 1.5,
+                      py: 0.5,
+                      fontSize: '0.75rem',
+                      fontWeight: 500
+                    }}>
+                      Others: {family.otherMembers.length}
+                    </Box>
+                  )}
                 </Box>
-              )}
-              {family.otherMembers && family.otherMembers.length > 0 && (
-                <Box sx={{
-                  backgroundColor: 'rgba(52, 199, 89, 0.1)',
-                  color: '#34c759',
-                  borderRadius: '20px',
-                  px: 1.5,
-                  py: 0.5,
-                  fontSize: '0.75rem',
-                  fontWeight: 500
-                }}>
-                  Others: {family.otherMembers.length}
-                </Box>
-              )}
-            </Box>
-          </Box>
+              </Box>
+            </Stack>
+          </Collapse>
 
           {/* Actions */}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 1 }}>
