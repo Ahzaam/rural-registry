@@ -220,7 +220,7 @@ const Dashboard: React.FC = () => {
                           </AnimatePresence>
                         </motion.div>
                       ) : (
-                        // Desktop Table View with animation
+                        // Desktop Table View with animation s
                         <FamilyTable 
                           families={filteredFamilies} 
                           onDelete={handleDeleteFamily}

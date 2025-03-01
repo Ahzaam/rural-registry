@@ -19,9 +19,11 @@ import {
   Slide,
   AppBar,
   Toolbar,
+  Stack,
+  useTheme,
 } from "@mui/material";
-import { ArrowBack, QrCode as QrCodeIcon, Close } from "@mui/icons-material";
-import { useNavigate, useParams } from "react-router-dom";
+import { ArrowBack, QrCode as QrCodeIcon, Close, Add as AddIcon } from "@mui/icons-material";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { AidEvent, Family, Distribution, MonthlyContribution } from "../../types/types";
 import {
   getAidEvent,
@@ -35,25 +37,34 @@ import {
 } from "../../services/aidEventService";
 import { getFamilies } from "../../services/familyService";
 import EventQRScanner from "./EventQRScanner";
+import { motion, AnimatePresence } from "framer-motion";
+import AnimatedPage from "../common/AnimatedPage";
+import AnimatedContainer from "../common/AnimatedContainer";
+import { IDetectedBarcode } from "@yudiel/react-qr-scanner";
+
+interface EventFamily extends Family {
+  eligible: boolean;
+}
 
 export const ManageEventFamilies = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
   const { eventId } = useParams();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [event, setEvent] = useState<AidEvent | null>(null);
   const [families, setFamilies] = useState<Family[]>([]);
   const [records, setRecords] = useState<(Distribution | MonthlyContribution)[]>([]);
   const [selectedFamilies, setSelectedFamilies] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showQRScanner, setShowQRScanner] = useState(false);
-  const [showManualInput, setShowManualInput] = useState(false);
-  const [manualHomeId, setManualHomeId] = useState("");
-  const [statusToSet, setStatusToSet] = useState<"distributed" | "paid" | "skipped" | "excused">("distributed");
-  const [scannedFamily, setScannedFamily] = useState<Family | null>(null);
+  const [showQRScanner, setShowQRScanner] = useState(searchParams.get("qr") === "true");
+  const [showAddFamilies, setShowAddFamilies] = useState(false);
+  const [scannedFamily, setScannedFamily] = useState<EventFamily | null>(null);
   const [showFamilyPanel, setShowFamilyPanel] = useState(false);
   const [manualModeInScanner, setManualModeInScanner] = useState(false);
   const [tempHomeId, setTempHomeId] = useState("");
   const [scanError, setScanError] = useState<string | null>(null);
+  const [loadingQRDetails, setLoadingQRDetails] = useState(false);
 
   useEffect(() => {
     if (eventId) loadData();
@@ -62,12 +73,10 @@ export const ManageEventFamilies = () => {
   useEffect(() => {
     if (!eventId || !event?.type) return;
 
-    // Set up real-time listener for records
     const unsubscribe = subscribeToEventRecords(eventId, event.type as "distribution" | "collection", (updatedRecords) => {
       setRecords(updatedRecords);
     });
 
-    // Cleanup subscription when component unmounts or eventId/type changes
     return () => unsubscribe();
   }, [eventId, event?.type]);
 
@@ -120,6 +129,7 @@ export const ManageEventFamilies = () => {
       await Promise.all(promises);
       await loadData();
       setSelectedFamilies([]);
+      setShowAddFamilies(false);
     } catch (error) {
       console.error("Error adding families:", error);
     }
@@ -149,19 +159,29 @@ export const ManageEventFamilies = () => {
     }
   };
 
-  const handleQRScanned = async (qrString: string) => {
-    console.log("QR Scanned:", qrString);
+  const handleQRScanned = async (qrRes: IDetectedBarcode[]) => {
+    setLoadingQRDetails(true);
+    setShowFamilyPanel(true);
+    const qrString = qrRes[0].rawValue;
     const homeId = qrString.split("-")[0];
-    const family = families.find((f) => f.homeId === homeId);
+    const family = families.find((f) => f.homeId === homeId) as EventFamily;
     if (family) {
       const record = records.find((r) => r.familyId === family.id);
-      if (record && (record.status === "distributed" || record.status === "paid")) {
-        setScanError(`This family has already been marked as ${record.status}`);
+
+      if (record) {
+        if (record.status === "distributed" || record.status === "paid") {
+          family.eligible = false;
+          setScanError(`This family has already been marked as ${record.status}`);
+        } else {
+          family.eligible = true;
+          setScanError(null);
+        }
       } else {
+        family.eligible = false;
         setScanError(null);
       }
+      setLoadingQRDetails(false);
       setScannedFamily(family);
-      setShowFamilyPanel(true);
       setManualModeInScanner(false);
     }
   };
@@ -170,11 +190,9 @@ export const ManageEventFamilies = () => {
     if (!event || !eventId) return false;
 
     try {
-      // Get the latest record directly from the database
       const latestRecord =
         event.type === "distribution" ? await getDistribution(eventId, familyId) : await getContribution(eventId, familyId);
 
-      // If the record exists and is already marked, return false
       if (latestRecord && (latestRecord.status === "distributed" || latestRecord.status === "paid")) {
         setScanError(`This family has already been marked as ${latestRecord.status} by another device`);
         return false;
@@ -191,10 +209,8 @@ export const ManageEventFamilies = () => {
   const handleStatusUpdateInScanner = async () => {
     if (!scannedFamily || !event) return;
 
-    // Check latest status from database before proceeding
     const canProceed = await checkLatestStatus(scannedFamily.id);
     if (!canProceed) {
-      // Update local records to reflect the current state
       await loadData();
       return;
     }
@@ -202,7 +218,6 @@ export const ManageEventFamilies = () => {
     const record = records.find((r) => r.familyId === scannedFamily.id);
     if (record) {
       await handleStatusUpdate(scannedFamily.id, event.type === "distribution" ? "distributed" : "paid");
-      // Reset and prepare for next scan
       setShowFamilyPanel(false);
       setScannedFamily(null);
       setTempHomeId("");
@@ -211,157 +226,24 @@ export const ManageEventFamilies = () => {
   };
 
   const handleManualSearch = () => {
-    const family = families.find((f) => f.homeId === tempHomeId);
+    setLoadingQRDetails(true);
+    setShowFamilyPanel(true);
+
+    const family = families.find((f) => f.homeId === tempHomeId) as EventFamily;
     if (family) {
       const record = records.find((r) => r.familyId === family.id);
+
       if (record && (record.status === "distributed" || record.status === "paid")) {
+        family.eligible = false;
         setScanError(`This family has already been marked as ${record.status}`);
       } else {
+        family.eligible = true;
         setScanError(null);
       }
+      setLoadingQRDetails(false);
       setScannedFamily(family);
-      setShowFamilyPanel(true);
-      // Don't clear tempHomeId here
     }
   };
-
-  const handleManualSubmit = async () => {
-    const family = families.find((f) => f.homeId === manualHomeId);
-    if (family) {
-      await handleStatusUpdate(family.id, statusToSet);
-    }
-    setManualHomeId("");
-    setShowManualInput(false);
-  };
-
-  const ScannerOverlay = () => (
-    <Box
-      sx={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bgcolor: "background.paper",
-        zIndex: 9999,
-      }}
-    >
-      <AppBar position="static" color="transparent" elevation={0}>
-        <Toolbar>
-          <IconButton
-            edge="start"
-            onClick={() => {
-              setShowQRScanner(false);
-              setScannedFamily(null);
-              setShowFamilyPanel(false);
-              setManualModeInScanner(false);
-              setTempHomeId(""); // Clear on manual close
-            }}
-          >
-            <Close />
-          </IconButton>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Scan QR Code
-          </Typography>
-          <Button variant="outlined" onClick={() => setManualModeInScanner(!manualModeInScanner)}>
-            Manual Input
-          </Button>
-        </Toolbar>
-      </AppBar>
-
-      {manualModeInScanner ? (
-        <Box sx={{ p: 2 }}>
-          <TextField
-            fullWidth
-            autoFocus
-            label="Enter Home ID"
-            value={tempHomeId}
-            onChange={(e) => setTempHomeId(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleManualSearch();
-              }
-            }}
-            sx={{ mb: 2 }}
-          />
-          <Button fullWidth variant="contained" onClick={handleManualSearch} sx={{ mb: 1 }}>
-            Search
-          </Button>
-        </Box>
-      ) : (
-        <EventQRScanner onScan={handleQRScanned} onClose={() => {}} />
-      )}
-
-      <Slide direction="up" in={showFamilyPanel}>
-        <Paper
-          sx={{
-            position: "fixed",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            p: 2,
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
-            boxShadow: 3,
-          }}
-        >
-          {scannedFamily && (
-            <>
-              <Typography variant="h6" gutterBottom>
-                {scannedFamily.headOfFamily.firstName} {scannedFamily.headOfFamily.lastName}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Home ID: {scannedFamily.homeId}
-              </Typography>
-              {scanError ? (
-                <>
-                  <Typography
-                    color="error"
-                    sx={{
-                      mt: 2,
-                      mb: 2,
-                      bgcolor: "error.lighter",
-                      p: 2,
-                      borderRadius: 1,
-                    }}
-                  >
-                    {scanError}
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    onClick={() => {
-                      setShowFamilyPanel(false);
-                      setScannedFamily(null);
-                      setScanError(null);
-                    }}
-                  >
-                    Close
-                  </Button>
-                </>
-              ) : (
-                <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
-                  <Button variant="contained" fullWidth sx={{ flex: 3 }} onClick={handleStatusUpdateInScanner}>
-                    Mark as {event?.type === "distribution" ? "Distributed" : "Paid"}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    sx={{ flex: 1 }}
-                    onClick={() => {
-                      setShowFamilyPanel(false);
-                      setScannedFamily(null);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </Box>
-              )}
-            </>
-          )}
-        </Paper>
-      </Slide>
-    </Box>
-  );
 
   if (loading || !event) {
     return (
@@ -372,208 +254,558 @@ export const ManageEventFamilies = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-          <IconButton
-            onClick={() => navigate(`/aid-events`)}
-            sx={{
-              color: "primary.main",
-              bgcolor: "primary.lighter",
-              "&:hover": { bgcolor: "primary.light" },
-            }}
-          >
-            <ArrowBack />
-          </IconButton>
-          <Typography variant="h4" component="h1">
-            {event.name}
-          </Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
-          <Button
-            variant="outlined"
-            startIcon={<QrCodeIcon />}
-            onClick={() => setShowQRScanner(true)}
-            sx={{ borderRadius: "12px" }}
-          >
-            Scan QR
-          </Button>
-          <Button variant="outlined" onClick={() => setShowManualInput(true)} sx={{ borderRadius: "12px" }}>
-            Manual Update
-          </Button>
-        </Box>
-
-        {showManualInput && (
-          <Paper sx={{ p: 3, borderRadius: "16px", mb: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              Manual Status Update
-            </Typography>
-            <TextField
-              fullWidth
-              label="Enter Home ID"
-              value={manualHomeId}
-              onChange={(e) => setManualHomeId(e.target.value)}
-              sx={{ mb: 2 }}
-            />
-            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-              {event.type === "distribution" ? (
-                <>
-                  <Button fullWidth onClick={() => setStatusToSet("distributed")}>
-                    Distributed
-                  </Button>
-                  <Button fullWidth onClick={() => setStatusToSet("skipped")}>
-                    Skipped
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button fullWidth onClick={() => setStatusToSet("paid")}>
-                    Paid
-                  </Button>
-                  <Button fullWidth onClick={() => setStatusToSet("excused")}>
-                    Excused
-                  </Button>
-                </>
-              )}
+    <AnimatedPage>
+      <Box sx={{ minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%)" }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <AnimatedContainer animation="slide" delay={0.1}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <IconButton
+                  onClick={() => navigate(`/aid-events`)}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    bgcolor: "primary.lighter",
+                    "&:hover": { bgcolor: "primary.light" },
+                  }}
+                >
+                  <ArrowBack />
+                </IconButton>
+              </motion.div>
+              <Typography variant="h4" component="h1" sx={{ color: "#1d1d1f" }}>
+                {event.name}
+              </Typography>
             </Box>
-            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-              <Button fullWidth variant="contained" onClick={handleManualSubmit}>
-                Update Status
+          </AnimatedContainer>
+
+          <AnimatedContainer animation="slide" delay={0.2}>
+            <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
+              <Button
+                variant="outlined"
+                startIcon={<QrCodeIcon />}
+                onClick={() => setShowQRScanner(true)}
+                sx={{
+                  borderRadius: "12px",
+                  borderColor: "#0070c9",
+                  color: "#0070c9",
+                  "&:hover": {
+                    borderColor: "#005ea3",
+                    bgcolor: "rgba(0, 112, 201, 0.04)",
+                  },
+                }}
+              >
+                Scan QR
               </Button>
-              <Button fullWidth variant="outlined" onClick={() => setShowManualInput(false)}>
-                Cancel
+              <Button
+                variant="outlined"
+                startIcon={<AddIcon />}
+                onClick={() => setShowAddFamilies(true)}
+                sx={{
+                  borderRadius: "12px",
+                  borderColor: "#0070c9",
+                  color: "#0070c9",
+                  "&:hover": {
+                    borderColor: "#005ea3",
+                    bgcolor: "rgba(0, 112, 201, 0.04)",
+                  },
+                }}
+              >
+                Add Families
               </Button>
             </Box>
-          </Paper>
-        )}
+          </AnimatedContainer>
 
-        <Paper sx={{ p: 3, borderRadius: "16px", mb: 4 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Add Families to Event
-          </Typography>
-          <TextField
-            placeholder="Search families..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            fullWidth
-            sx={{ mb: 2 }}
-          />
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={selectedFamilies.length === filteredFamilies.length}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedFamilies(filteredFamilies.map((f) => f.id));
-                        } else {
-                          setSelectedFamilies([]);
-                        }
-                      }}
+          <AnimatePresence mode="wait">
+            {showAddFamilies ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Paper sx={{ p: 3, borderRadius: "16px", mb: 4, boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
+                  <Stack spacing={2}>
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <Typography variant="h6" sx={{ color: "#1d1d1f" }}>
+                        Add Families to Event
+                      </Typography>
+                      <IconButton onClick={() => setShowAddFamilies(false)} size="small">
+                        <Close />
+                      </IconButton>
+                    </Box>
+                    <TextField
+                      placeholder="Search families..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      fullWidth
+                      sx={{ mb: 2 }}
                     />
-                  </TableCell>
-                  <TableCell>Home ID</TableCell>
-                  <TableCell>Head of Family</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredFamilies.map((family) => (
-                  <TableRow key={family.id}>
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={selectedFamilies.includes(family.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedFamilies([...selectedFamilies, family.id]);
-                          } else {
-                            setSelectedFamilies(selectedFamilies.filter((id) => id !== family.id));
-                          }
+                    <TableContainer>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                checked={selectedFamilies.length === filteredFamilies.length}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedFamilies(filteredFamilies.map((f) => f.id));
+                                  } else {
+                                    setSelectedFamilies([]);
+                                  }
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>Home ID</TableCell>
+                            <TableCell>Head of Family</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          <AnimatePresence mode="popLayout">
+                            {filteredFamilies.map((family, index) => (
+                              <motion.tr
+                                key={family.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ delay: index * 0.05 }}
+                              >
+                                <TableCell padding="checkbox">
+                                  <Checkbox
+                                    checked={selectedFamilies.includes(family.id)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setSelectedFamilies([...selectedFamilies, family.id]);
+                                      } else {
+                                        setSelectedFamilies(selectedFamilies.filter((id) => id !== family.id));
+                                      }
+                                    }}
+                                  />
+                                </TableCell>
+                                <TableCell sx={{ color: "#1d1d1f" }}>{family.homeId}</TableCell>
+                                <TableCell sx={{ color: "#1d1d1f" }}>
+                                  {family.headOfFamily.firstName} {family.headOfFamily.lastName}
+                                </TableCell>
+                              </motion.tr>
+                            ))}
+                          </AnimatePresence>
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                    <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="contained"
+                        disabled={selectedFamilies.length === 0}
+                        onClick={handleAddFamilies}
+                        sx={{
+                          borderRadius: "12px",
+                          bgcolor: "#0070c9",
+                          "&:hover": {
+                            bgcolor: "#005ea3",
+                          },
                         }}
-                      />
-                    </TableCell>
-                    <TableCell>{family.homeId}</TableCell>
-                    <TableCell>
-                      {family.headOfFamily.firstName} {family.headOfFamily.lastName}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
-            <Button
-              variant="contained"
-              disabled={selectedFamilies.length === 0}
-              onClick={handleAddFamilies}
-              sx={{ borderRadius: "12px" }}
+                      >
+                        Add Selected Families
+                      </Button>
+                    </Box>
+                  </Stack>
+                </Paper>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Paper sx={{ p: 3, borderRadius: "16px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
+                  <Typography variant="h6" sx={{ mb: 3, color: "#1d1d1f" }}>
+                    Event Families
+                  </Typography>
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Home ID</TableCell>
+                          <TableCell>Head of Family</TableCell>
+                          <TableCell>Status</TableCell>
+                          {event.type === "collection" && <TableCell align="right">Amount</TableCell>}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        <AnimatePresence mode="popLayout">
+                          {records.map((record) => {
+                            const family = families.find((f) => f.id === record.familyId);
+                            if (!family) return null;
+
+                            return (
+                              <motion.tr
+                                key={record.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                <TableCell sx={{ color: "#1d1d1f" }}>{family.homeId}</TableCell>
+                                <TableCell sx={{ color: "#1d1d1f" }}>
+                                  {family.headOfFamily.firstName} {family.headOfFamily.lastName}
+                                </TableCell>
+                                <TableCell>
+                                  <Chip
+                                    label={record.status}
+                                    size="small"
+                                    sx={{
+                                      borderRadius: "12px",
+                                      bgcolor:
+                                        record.status === "distributed" || record.status === "paid"
+                                          ? "success.lighter"
+                                          : record.status === "skipped" || record.status === "excused"
+                                          ? "warning.lighter"
+                                          : "info.lighter",
+                                      color:
+                                        record.status === "distributed" || record.status === "paid"
+                                          ? "success.main"
+                                          : record.status === "skipped" || record.status === "excused"
+                                          ? "warning.main"
+                                          : "info.main",
+                                    }}
+                                  />
+                                </TableCell>
+                                {event.type === "collection" && (
+                                  <TableCell align="right" sx={{ color: "#1d1d1f" }}>
+                                    Rs. {(record as MonthlyContribution).amount || 0}
+                                  </TableCell>
+                                )}
+                              </motion.tr>
+                            );
+                          })}
+                        </AnimatePresence>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Container>
+
+        <AnimatePresence>
+          {showQRScanner && (
+            <Box
+              component={motion.div}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              sx={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                bgcolor: "background.paper",
+                zIndex: 9999,
+              }}
             >
-              Add Selected Families
-            </Button>
-          </Box>
-        </Paper>
+              <AppBar position="static" color="transparent" elevation={0}>
+                <Toolbar>
+                  <IconButton
+                    edge="start"
+                    onClick={() => {
+                      setShowQRScanner(false);
+                      setScannedFamily(null);
+                      setShowFamilyPanel(false);
+                      setManualModeInScanner(false);
+                      setTempHomeId("");
+                    }}
+                  >
+                    <Close />
+                  </IconButton>
+                  <Typography variant="h6" sx={{ flexGrow: 1, color: "#1d1d1f" }}>
+                    Scan QR Code
+                  </Typography>
+                  <Button variant="outlined" onClick={() => setManualModeInScanner(!manualModeInScanner)}>
+                    Manual Input
+                  </Button>
+                </Toolbar>
+              </AppBar>
 
-        <Paper sx={{ p: 3, borderRadius: "16px" }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Event Families
-          </Typography>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Home ID</TableCell>
-                  <TableCell>Head of Family</TableCell>
-                  <TableCell>Status</TableCell>
-                  {event.type === "collection" && <TableCell align="right">Amount</TableCell>}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {records.map((record) => {
-                  const family = families.find((f) => f.id === record.familyId);
-                  if (!family) return null;
+              {manualModeInScanner ? (
+                <Box sx={{ p: 2 }}>
+                  <TextField
+                    fullWidth
+                    autoFocus
+                    label="Enter Home ID"
+                    value={tempHomeId}
+                    onChange={(e) => setTempHomeId(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleManualSearch();
+                      }
+                    }}
+                    sx={{ mb: 2 }}
+                  />
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    onClick={handleManualSearch}
+                    sx={{
+                      mb: 1,
+                      bgcolor: "#0070c9",
+                      "&:hover": {
+                        bgcolor: "#005ea3",
+                      },
+                    }}
+                  >
+                    Search
+                  </Button>
+                </Box>
+              ) : (
+                <EventQRScanner onScan={handleQRScanned} onClose={() => {}} />
+              )}
 
-                  return (
-                    <TableRow key={record.id}>
-                      <TableCell>{family.homeId}</TableCell>
-                      <TableCell>
-                        {family.headOfFamily.firstName} {family.headOfFamily.lastName}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={record.status}
-                          size="small"
+              <Slide direction="up" in={showFamilyPanel}>
+                <Paper
+                  sx={{
+                    position: "fixed",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    p: 3,
+                    borderTopLeftRadius: 24,
+                    borderTopRightRadius: 24,
+                    boxShadow: "0 -4px 20px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  {loadingQRDetails ? (
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 4 }}>
+                      <CircularProgress size={40} sx={{ mb: 2 }} />
+                      <Typography variant="body1" color="text.secondary">
+                        Loading family details...
+                      </Typography>
+                    </Box>
+                  ) : (
+                    scannedFamily && (
+                      <Box sx={{ position: "relative" }}>
+                        <Box sx={{ mt: 4, textAlign: "center" }}>
+                          <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ color: "#1d1d1f" }}>
+                            {scannedFamily.headOfFamily.firstName} {scannedFamily.headOfFamily.lastName}
+                          </Typography>
+
+                          <Chip
+                            label={`Home ID: ${scannedFamily.homeId}`}
+                            sx={{ mb: 2, borderRadius: 8, bgcolor: "primary.lighter", color: "primary.dark" }}
+                          />
+                        </Box>
+
+                        <Box
                           sx={{
-                            borderRadius: "12px",
-                            bgcolor:
-                              record.status === "distributed" || record.status === "paid"
-                                ? "success.lighter"
-                                : record.status === "skipped" || record.status === "excused"
-                                ? "warning.lighter"
-                                : "info.lighter",
-                            color:
-                              record.status === "distributed" || record.status === "paid"
-                                ? "success.main"
-                                : record.status === "skipped" || record.status === "excused"
-                                ? "warning.main"
-                                : "info.main",
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: 2,
+                            my: 3,
+                            p: 2,
+                            borderRadius: 3,
+                            bgcolor: "background.default",
                           }}
-                        />
-                      </TableCell>
-                      {event.type === "collection" && (
-                        <TableCell align="right">Rs. {(record as MonthlyContribution).amount || 0}</TableCell>
-                      )}
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-      </Box>
+                        >
+                          <Box>
+                            <Typography variant="caption" color="text.secondary">
+                              Family Members
+                            </Typography>
+                            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                              <motion.div whileHover={{ y: -2 }}>
+                                <Box
+                                  sx={{
+                                    backgroundColor: "rgba(0, 112, 201, 0.1)",
+                                    color: "#0070c9",
+                                    borderRadius: "20px",
+                                    px: 1.5,
+                                    py: 0.5,
+                                    fontSize: "0.75rem",
+                                    fontWeight: 500,
+                                  }}
+                                >
+                                  Adults: {1 + (scannedFamily.spouse ? 1 : 0)}
+                                </Box>
+                              </motion.div>
+                              {scannedFamily.children.length > 0 && (
+                                <motion.div whileHover={{ y: -2 }}>
+                                  <Box
+                                    sx={{
+                                      backgroundColor: "rgba(88, 86, 214, 0.1)",
+                                      color: "#5856d6",
+                                      borderRadius: "20px",
+                                      px: 1.5,
+                                      py: 0.5,
+                                      fontSize: "0.75rem",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    Children: {scannedFamily.children.length}
+                                  </Box>
+                                </motion.div>
+                              )}
+                              {scannedFamily.otherMembers && scannedFamily.otherMembers.length > 0 && (
+                                <motion.div whileHover={{ y: -2 }}>
+                                  <Box
+                                    sx={{
+                                      backgroundColor: "rgba(52, 199, 89, 0.1)",
+                                      color: "#34c759",
+                                      borderRadius: "20px",
+                                      px: 1.5,
+                                      py: 0.5,
+                                      fontSize: "0.75rem",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    Others: {scannedFamily.otherMembers.length}
+                                  </Box>
+                                </motion.div>
+                              )}
+                            </Box>
+                          </Box>
+                          <Box>
+                            <Typography variant="caption" color="text.secondary">
+                              Phone
+                            </Typography>
+                            <Typography variant="body1" fontWeight="medium">
+                              {scannedFamily.headOfFamily.contact || "N/A"}
+                            </Typography>
+                          </Box>
+                          <Box>
+                            <Typography variant="caption" color="text.secondary">
+                              Location
+                            </Typography>
+                            <Typography variant="body1" fontWeight="medium">
+                              {scannedFamily.address || "N/A"}
+                            </Typography>
+                          </Box>
+                          <Box>
+                            <Typography variant="caption" color="text.secondary">
+                              Status {scannedFamily.eligible}
+                            </Typography>
+                            <Typography
+                              variant="body1"
+                              fontWeight="medium"
+                              sx={{ color: scannedFamily.eligible ? "success.main" : "error.main" }}
+                            >
+                              {scannedFamily.eligible ? "Eligible" : "Ineligible"}
+                            </Typography>
+                          </Box>
+                        </Box>
 
-      {showQRScanner && <ScannerOverlay />}
-    </Container>
+                        {scanError ? (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <Box
+                              sx={{
+                                mt: 2,
+                                mb: 2,
+                                bgcolor: "error.lighter",
+                                p: 3,
+                                borderRadius: 3,
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                gap: 2,
+                              }}
+                            >
+                              <Typography variant="h6" color="error.main" fontWeight="medium">
+                                {scanError}
+                              </Typography>
+                              <Button
+                                variant="outlined"
+                                color="error"
+                                size="large"
+                                onClick={() => {
+                                  setShowFamilyPanel(false);
+                                  setScannedFamily(null);
+                                  setScanError(null);
+                                }}
+                                sx={{ borderRadius: "12px", px: 4 }}
+                              >
+                                Close
+                              </Button>
+                            </Box>
+                          </motion.div>
+                        ) : (
+                          <Box sx={{ mt: 3 }}>
+                            <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 3 }}>
+                              Please confirm this is the correct family before proceeding
+                            </Typography>
+                            <Stack direction="column" spacing={2}>
+                              {scannedFamily.eligible ? (
+                                <Button
+                                  variant="contained"
+                                  size="large"
+                                  startIcon={event?.type === "distribution" ? <AddIcon /> : <QrCodeIcon />}
+                                  sx={{
+                                    borderRadius: "12px",
+                                    py: 1.5,
+                                    bgcolor: "#0070c9",
+                                    "&:hover": {
+                                      bgcolor: "#005ea3",
+                                    },
+                                    boxShadow: "0 4px 12px rgba(0,112,201,0.2)",
+                                  }}
+                                  onClick={handleStatusUpdateInScanner}
+                                >
+                                  Mark as {event?.type === "distribution" ? "Distributed" : "Paid"}
+                                </Button>
+                              ) : (
+                                //  in eligible families force mark as distributed
+                                <Button
+                                  variant="contained"
+                                  size="large"
+                                  startIcon={event?.type === "distribution" ? <AddIcon /> : <QrCodeIcon />}
+                                  sx={{
+                                    borderRadius: "12px",
+                                    py: 1.5,
+                                    bgcolor: "error.main",
+                                    "&:hover": {
+                                      bgcolor: "error.dark",
+                                    },
+                                    boxShadow: "0 4px 12px rgba(211,47,47,0.2)",
+                                  }}
+                                  onClick={handleStatusUpdateInScanner}
+                                >
+                                  Force Distribute
+                                </Button>
+                              )}
+                              <Button
+                                variant="outlined"
+                                size="large"
+                                sx={{
+                                  borderRadius: "12px",
+                                  py: 1.5,
+                                  borderColor: "#0070c9",
+                                  color: "#0070c9",
+                                  "&:hover": {
+                                    borderColor: "#005ea3",
+                                    bgcolor: "rgba(0, 112, 201, 0.04)",
+                                  },
+                                }}
+                                onClick={() => {
+                                  setShowFamilyPanel(false);
+                                  setScannedFamily(null);
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                            </Stack>
+                          </Box>
+                        )}
+                      </Box>
+                    )
+                  )}
+                </Paper>
+              </Slide>
+            </Box>
+          )}
+        </AnimatePresence>
+      </Box>
+    </AnimatedPage>
   );
 };
