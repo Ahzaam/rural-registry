@@ -41,3 +41,48 @@ export interface User {
   photoURL: string;
   isAdmin?: boolean;
 }
+
+export interface AidEvent {
+  id: string;
+  name: string;
+  description?: string;
+  date: Date;
+  type: 'distribution' | 'collection' | string;
+  status: 'planned' | 'ongoing' | 'completed';
+  items?: {
+    name: string;
+    quantity?: number;
+    unit?: string;
+  }[];
+  targetAmount?: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Distribution {
+  id: string;
+  eventId: string;
+  familyId: string;
+  status: 'pending' | 'distributed' | 'skipped';
+  items?: {
+    name: string;
+    quantity: number;
+    unit?: string;
+  }[];
+  notes?: string;
+  distributedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MonthlyContribution {
+  id: string;
+  eventId: string;
+  familyId: string;
+  amount: number;
+  status: 'pending' | 'paid' | 'excused';
+  paidAt?: Date;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

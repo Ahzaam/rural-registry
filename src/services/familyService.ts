@@ -9,7 +9,8 @@ import {
   query,
   where,
   orderBy,
-  serverTimestamp
+  serverTimestamp,
+  limit
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { Family } from '../types/types';
@@ -37,17 +38,22 @@ export const getFamilyByHomeId = async (homeId: string): Promise<Family | null> 
   try {
     const q = query(
       collection(db, FAMILIES_COLLECTION),
-      where('homeId', '==', homeId)
+      where('homeId', '==', homeId),
+      limit(1)
     );
     const snapshot = await getDocs(q);
+    
     if (snapshot.empty) return null;
+    
     const doc = snapshot.docs[0];
     return {
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
+      createdAt: doc.data().createdAt.toDate(),
+      updatedAt: doc.data().updatedAt.toDate()
     } as Family;
   } catch (error) {
-    console.error('Error getting family by home ID:', error);
+    console.error('Error getting family by homeId:', error);
     throw error;
   }
 };

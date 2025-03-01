@@ -1,6 +1,7 @@
 import React from 'react';
 import { Paper, Box, TextField, Stack, Button } from '@mui/material';
-import { Add as AddIcon, QrCode as QrCodeIcon, Search as SearchIcon } from '@mui/icons-material';
+import { Add as AddIcon, QrCode as QrCodeIcon, Search as SearchIcon} from '@mui/icons-material';
+// , Volunteer as VolunteerIcon 
 import { Link, useNavigate } from 'react-router-dom';
 
 interface SearchActionsProps {
@@ -94,7 +95,31 @@ const SearchActions: React.FC<SearchActionsProps> = ({ searchTerm, onSearchChang
               transition: 'all 0.2s ease-in-out'
             }}
           >
-            Scan QR
+            Scan
+          </Button>
+          <Button
+            variant="outlined"
+            // startIcon={<VolunteerIcon />}
+            onClick={() => navigate('/aid-events')}
+            fullWidth
+            sx={{ 
+              borderRadius: '15px',
+              borderColor: '#0070c9',
+              color: '#0070c9',
+              padding: '12px 24px',
+              textTransform: 'none',
+              fontWeight: 600,
+              flex: { xs: 1, md: 'initial' },
+              minWidth: { xs: 0, md: '120px' },
+              '&:hover': { 
+                borderColor: '#005ea3',
+                backgroundColor: 'rgba(0, 112, 201, 0.04)',
+                transform: 'translateY(-2px)'
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}
+          >
+            Aid Events
           </Button>
           <Button 
             variant="contained" 
@@ -119,7 +144,7 @@ const SearchActions: React.FC<SearchActionsProps> = ({ searchTerm, onSearchChang
               transition: 'all 0.2s ease-in-out'
             }}
           >
-            Add New Family
+             Family
           </Button>
         </Stack>
       </Stack>
