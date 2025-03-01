@@ -14,6 +14,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.6",
     "@mui/material": "^6.4.6",
+    "@react-spring/web": "^9.7.5",
     "@tailwindcss/vite": "^4.0.9",
     "@yudiel/react-qr-scanner": "^2.2.1",
     "firebase": "^11.4.0",
@@ -21,7 +22,9 @@
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-intersection-observer": "^9.15.1",
     "react-router-dom": "^7.2.0",
+    "react-spring": "^9.7.5",
     "tailwindcss": "^4.0.9"
   },
   "devDependencies": {

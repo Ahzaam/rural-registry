@@ -1,8 +1,9 @@
-import React from 'react';
-import { Paper, Box, TextField, Stack, Button } from '@mui/material';
-import { Add as AddIcon, QrCode as QrCodeIcon, Search as SearchIcon} from '@mui/icons-material';
-// , Volunteer as VolunteerIcon 
+import React, { useState } from 'react';
+import { Paper, Box, TextField, Stack, InputAdornment } from '@mui/material';
+import { Add as AddIcon, QrCode as QrCodeIcon, Search as SearchIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import AnimatedButton from '../common/AnimatedButton';
 
 interface SearchActionsProps {
   searchTerm: string;
@@ -11,9 +12,14 @@ interface SearchActionsProps {
 
 const SearchActions: React.FC<SearchActionsProps> = ({ searchTerm, onSearchChange }) => {
   const navigate = useNavigate();
+  const [isFocused, setIsFocused] = useState(false);
 
   return (
     <Paper 
+      component={motion.div}
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       elevation={0}
       sx={{ 
         p: { xs: 2, md: 3 }, 
@@ -29,18 +35,15 @@ const SearchActions: React.FC<SearchActionsProps> = ({ searchTerm, onSearchChang
         spacing={2} 
         alignItems="stretch"
       >
-        <Box sx={{ 
-          position: 'relative',
-          flex: 1
-        }}>
-          <SearchIcon sx={{ 
-            position: 'absolute',
-            left: 2,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: '#86868b',
-            ml: 1
-          }} />
+        <Box 
+          component={motion.div}
+          animate={isFocused ? { scale: 1.01 } : { scale: 1 }}
+          sx={{ 
+            position: 'relative',
+            flex: 1,
+            transition: 'all 0.2s ease'
+          }}
+        >
           <TextField
             placeholder="Search families..."
             variant="outlined"
@@ -48,13 +51,43 @@ const SearchActions: React.FC<SearchActionsProps> = ({ searchTerm, onSearchChang
             fullWidth
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: isFocused ? '#0070c9' : '#86868b' }} />
+                </InputAdornment>
+              ),
+              endAdornment: searchTerm && (
+                <InputAdornment position="end">
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <ClearIcon 
+                      sx={{ 
+                        cursor: 'pointer', 
+                        color: '#86868b',
+                        '&:hover': { color: '#ff3b30' }
+                      }}
+                      onClick={() => onSearchChange('')}
+                    />
+                  </motion.div>
+                </InputAdornment>
+              )
+            }}
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: '15px',
-                pl: 5,
                 backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                transition: 'all 0.3s ease',
+                boxShadow: isFocused ? '0 0 0 3px rgba(0, 112, 201, 0.2)' : 'none',
                 '& fieldset': {
-                  borderColor: 'rgba(0, 0, 0, 0.1)',
+                  borderColor: isFocused ? '#0070c9' : 'rgba(0, 0, 0, 0.1)',
+                  transition: 'all 0.3s ease',
                 },
                 '&:hover fieldset': {
                   borderColor: '#0070c9',
@@ -73,7 +106,7 @@ const SearchActions: React.FC<SearchActionsProps> = ({ searchTerm, onSearchChang
             width: { xs: '100%', md: 'auto' }
           }}
         >
-          <Button 
+          <AnimatedButton 
             variant="outlined"
             startIcon={<QrCodeIcon />}
             onClick={() => navigate('/scanner')}
@@ -83,21 +116,18 @@ const SearchActions: React.FC<SearchActionsProps> = ({ searchTerm, onSearchChang
               borderColor: '#0070c9',
               color: '#0070c9',
               padding: '8px 16px',
-              textTransform: 'none',
               fontWeight: 500,
               flex: { xs: 1, md: 'initial' },
               minWidth: { xs: 0, md: '100px' },
               '&:hover': { 
                 borderColor: '#005ea3',
                 backgroundColor: 'rgba(0, 112, 201, 0.04)',
-                transform: 'translateY(-1px)'
-              },
-              transition: 'all 0.2s ease-in-out'
+              }
             }}
           >
             Scan
-          </Button>
-          <Button
+          </AnimatedButton>
+          <AnimatedButton
             variant="outlined"
             onClick={() => navigate('/aid-events')}
             fullWidth
@@ -106,21 +136,18 @@ const SearchActions: React.FC<SearchActionsProps> = ({ searchTerm, onSearchChang
               borderColor: '#0070c9',
               color: '#0070c9',
               padding: '8px 16px',
-              textTransform: 'none',
               fontWeight: 500,
               flex: { xs: 1, md: 'initial' },
               minWidth: { xs: 0, md: '100px' },
               '&:hover': { 
                 borderColor: '#005ea3',
                 backgroundColor: 'rgba(0, 112, 201, 0.04)',
-                transform: 'translateY(-1px)'
-              },
-              transition: 'all 0.2s ease-in-out'
+              }
             }}
           >
             Aid Events
-          </Button>
-          <Button 
+          </AnimatedButton>
+          <AnimatedButton 
             variant="contained" 
             startIcon={<AddIcon />}
             component={Link}
@@ -130,21 +157,18 @@ const SearchActions: React.FC<SearchActionsProps> = ({ searchTerm, onSearchChang
               borderRadius: '12px',
               backgroundColor: '#0070c9',
               padding: '8px 16px',
-              textTransform: 'none',
               fontWeight: 500,
               flex: { xs: 1, md: 'initial' },
               minWidth: { xs: 0, md: '120px' },
               boxShadow: '0 2px 8px rgba(0, 112, 201, 0.25)',
               '&:hover': { 
                 backgroundColor: '#005ea3',
-                transform: 'translateY(-1px)',
                 boxShadow: '0 4px 12px rgba(0, 112, 201, 0.35)'
-              },
-              transition: 'all 0.2s ease-in-out'
+              }
             }}
           >
-             Family
-          </Button>
+            Family
+          </AnimatedButton>
         </Stack>
       </Stack>
     </Paper>
