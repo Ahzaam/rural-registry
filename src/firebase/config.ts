@@ -1,6 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+import { getVertexAI, type VertexAI } from 'firebase/vertexai';
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -19,5 +21,7 @@ const app = initializeApp(firebaseConfig);
 // Get Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-
+export const storage = getStorage(app);
+// Initialize the Vertex AI service
+export const vertexAI: VertexAI = getVertexAI(app);
 export default app;

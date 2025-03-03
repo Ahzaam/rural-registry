@@ -19,7 +19,7 @@ const OtherMembersDetails: React.FC<OtherMembersDetailsProps> = ({ family, handl
     updatedMembers[index] = { ...updatedMembers[index], [name]: value };
     setEditData(updatedMembers);
   };
-
+  const memberId = new URLSearchParams(window.location.search).get("memberId");
   const handleSave = () => {
     handleUpdate({ otherMembers: editData });
     setIsEditing(false);
@@ -47,7 +47,7 @@ const OtherMembersDetails: React.FC<OtherMembersDetailsProps> = ({ family, handl
         <Box className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
           <Typography variant="h6" className="font-medium text-gray-800">
             <People className="mr-2 text-blue-500" sx={{ verticalAlign: "middle", fontSize: "1.2rem" }} />
-            Other Members (0)
+            Extended Family Members (0)
           </Typography>
           <Box className="flex justify-center mt-2">
             <Button
@@ -64,7 +64,7 @@ const OtherMembersDetails: React.FC<OtherMembersDetailsProps> = ({ family, handl
                 },
               }}
             >
-              Add Member
+              Add Family Member
             </Button>
           </Box>
         </Box>
@@ -77,7 +77,7 @@ const OtherMembersDetails: React.FC<OtherMembersDetailsProps> = ({ family, handl
       <Box className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
         <Typography variant="h6" className="font-medium text-gray-800">
           <People className="mr-2 text-blue-500" sx={{ verticalAlign: "middle", fontSize: "1.2rem" }} />
-          Other Members ({family.otherMembers.length})
+          Extended Family Members ({family.otherMembers.length})
         </Typography>
         {isEditing ? (
           <Box>
@@ -98,9 +98,9 @@ const OtherMembersDetails: React.FC<OtherMembersDetailsProps> = ({ family, handl
       <CardContent className="p-6">
         {family.otherMembers.map((member, index) => (
           <Box key={index} className="mb-8 pb-6 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
-            <Box className="flex justify-between items-center mb-4">
+            <Box className={(memberId === member.id ? "border-yellow-500  " : " ") + "flex justify-between items-center mb-4" }>
               <Typography variant="subtitle1" className="font-medium">
-                {member.firstName} {member.lastName}
+                Family Member: {member.firstName} {member.lastName}
               </Typography>
               {member.relationship && (
                 <Chip
@@ -243,7 +243,7 @@ const OtherMembersDetails: React.FC<OtherMembersDetailsProps> = ({ family, handl
                 },
               }}
             >
-              Add Member
+              Add Family Member
             </Button>
           </Box>
         )}

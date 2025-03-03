@@ -32,6 +32,8 @@ export interface Family {
   landOwnership?: 'owned' | 'rented' | 'other';
   createdAt: Date;
   updatedAt: Date;
+  homeHistory?: HomeHistory[];
+  paymentHistory?: PaymentRecord[];
 }
 
 export interface User {
@@ -85,4 +87,37 @@ export interface MonthlyContribution {
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  type: 'general' | 'event' | 'prayer' | 'eid' | 'ramadan' | 'other';
+  imageUrl?: string;
+  visibleFrom: Date;
+  visibleUntil: Date;
+  priority: 'high' | 'medium' | 'low';
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+  isActive: boolean;
+  linkUrl?: string;
+  linkText?: string;
+}
+
+export interface HomeHistory {
+  address: string;
+  landOwnership: 'owned' | 'rented' | 'other';
+  fromDate: Date;
+  toDate?: Date;
+}
+
+export interface PaymentRecord {
+  eventId: string;
+  eventName: string;
+  amount?: number;
+  status: 'paid' | 'distributed' | 'skipped' | 'excused';
+  date: Date;
+  type: 'distribution' | 'collection';
 }

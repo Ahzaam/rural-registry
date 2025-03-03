@@ -111,18 +111,9 @@ export const AidEvents: React.FC = () => {
                       textShadow: "0 1px 2px rgba(0,0,0,0.04)"
                     }}
                   >
-                    Aid Events
+                     Events
                   </Typography>
-                  <Typography 
-                    variant="subtitle1" 
-                    sx={{ 
-                      color: '#86868b',
-                      fontWeight: 500,
-                      fontSize: { xs: '0.875rem', md: '1rem' }
-                    }}
-                  >
-                    Manage distributions and collections efficiently
-                  </Typography>
+               
                 </Box>
               </Box>
               

@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { Family } from '../types/types';
+import { generateRandomId } from '../utils/idGenerator';
 
 const FAMILIES_COLLECTION = 'families';
 
@@ -60,11 +61,18 @@ export const getFamilyByHomeId = async (homeId: string): Promise<Family | null> 
 
 export const addFamily = async (family: Omit<Family, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, FAMILIES_COLLECTION), {
+    // Generate IDs for members
+    const familyWithIds = {
       ...family,
+      headOfFamily: { ...family.headOfFamily, id: generateRandomId() },
+      spouse: family.spouse ? { ...family.spouse, id: generateRandomId() } : null,
+      children: family.children.map(child => ({ ...child, id: generateRandomId() })),
+      otherMembers: family.otherMembers.map(member => ({ ...member, id: generateRandomId() })),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
-    });
+    };
+
+    const docRef = await addDoc(collection(db, FAMILIES_COLLECTION), familyWithIds);
     return docRef.id;
   } catch (error) {
     console.error('Error adding family:', error);
@@ -95,19 +103,19 @@ export const deleteFamily = async (id: string): Promise<void> => {
   }
 };
 
-export const getFamilyById = async (id: string): Promise<Family | null> => {
+export const getFamilyById = async (id: string, options?: { queryParams?: { token?: string } }): Promise<Family> => {
   try {
     const familyRef = doc(db, FAMILIES_COLLECTION, id);
-    const docSnap = await getDoc(familyRef);
+    const docSnap = await getDoc(familyRef, options);
     
-    if (docSnap.exists()) {
-      return {
-        id: docSnap.id,
-        ...docSnap.data()
-      } as Family;
-    } else {
-      return null;
+    if (!docSnap.exists()) {
+      throw new Error('Family not found');
     }
+    
+    return {
+      id: docSnap.id,
+      ...docSnap.data()
+    } as Family;
   } catch (error) {
     console.error('Error getting family by ID:', error);
     throw error;

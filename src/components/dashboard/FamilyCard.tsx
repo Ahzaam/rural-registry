@@ -71,6 +71,30 @@ const FamilyCard: React.FC<FamilyCardProps> = ({ family, onDelete, isDeleting = 
 
       <CardContent sx={{ p: 3 }}>
         <Stack spacing={2.5}>
+
+          
+          {/* Head of Family */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box 
+              sx={{ 
+                backgroundColor: 'rgba(142, 142, 147, 0.1)',
+                p: 1,
+                borderRadius: '12px'
+              }}
+            >
+              <PersonIcon sx={{ color: '#8e8e93', fontSize: '1.4rem' }} />
+            </Box>
+            <Box>
+              <Typography sx={{ fontWeight: 500, color: '#1d1d1f' }}>
+                {`${family.headOfFamily.firstName} ${family.headOfFamily.lastName}`}
+              </Typography>
+              <Typography sx={{ fontSize: '0.875rem', color: '#86868b', mt: 0.5 }}>
+                {family.headOfFamily.occupation || 'No occupation listed'}
+              </Typography>
+            </Box>
+          </Box>
+
+
           {/* Header Section */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -89,10 +113,11 @@ const FamilyCard: React.FC<FamilyCardProps> = ({ family, onDelete, isDeleting = 
                 <Typography sx={{ 
                   fontWeight: 600,
                   fontSize: '1.1rem',
-                  color: '#1d1d1f',
+                  color: '#2929ff'
+                  , // blue
                   letterSpacing: '-0.01em'
                 }}>
-                  #{family.homeId}
+                   # {family.homeId}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
                   <Box 
@@ -118,27 +143,6 @@ const FamilyCard: React.FC<FamilyCardProps> = ({ family, onDelete, isDeleting = 
             >
               <ChevronRightIcon sx={{ color: '#86868b' }} />
             </motion.div>
-          </Box>
-
-          {/* Head of Family */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box 
-              sx={{ 
-                backgroundColor: 'rgba(142, 142, 147, 0.1)',
-                p: 1,
-                borderRadius: '12px'
-              }}
-            >
-              <PersonIcon sx={{ color: '#8e8e93', fontSize: '1.4rem' }} />
-            </Box>
-            <Box>
-              <Typography sx={{ fontWeight: 500, color: '#1d1d1f' }}>
-                {`${family.headOfFamily.firstName} ${family.headOfFamily.lastName}`}
-              </Typography>
-              <Typography sx={{ fontSize: '0.875rem', color: '#86868b', mt: 0.5 }}>
-                {family.headOfFamily.occupation || 'No occupation listed'}
-              </Typography>
-            </Box>
           </Box>
 
           {/* Expandable Content */}

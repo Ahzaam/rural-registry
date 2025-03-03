@@ -13,6 +13,8 @@ const ChildrenDetails: React.FC<ChildrenDetailsProps> = ({ family, handleUpdate 
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(family.children);
 
+  const memberId = new URLSearchParams(window.location.search).get('memberId');
+
   const handleChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     const updatedChildren = [...editData];
@@ -41,11 +43,22 @@ const ChildrenDetails: React.FC<ChildrenDetailsProps> = ({ family, handleUpdate 
 
   if (!family.children || family.children.length === 0) {
     return (
-      <Paper elevation={0} className="overflow-hidden rounded-xl border border-gray-200">
-        <Box className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+        <Paper
+           elevation={0}
+           className={
+             (memberId === family.headOfFamily.id ? " border-yellow-400 " : " ") +
+             "overflow-hidden rounded-xl border border-gray-200"
+           }
+         >
+           <Box
+             className={
+               (memberId === family.headOfFamily.id ? " bg-yellow-200 " : " ") +
+               "px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center"
+             }
+           >
           <Typography variant="h6" className="font-medium text-gray-800">
             <People className="mr-2 text-blue-500" sx={{ verticalAlign: 'middle', fontSize: '1.2rem' }} />
-            Children (0)
+            School Children (0)
           </Typography>
           {isEditing && (
             <Box className="flex justify-center mt-2">
@@ -63,7 +76,7 @@ const ChildrenDetails: React.FC<ChildrenDetailsProps> = ({ family, handleUpdate 
                   }
                 }}
               >
-                Add Child
+                Add School Child
               </Button>
             </Box>
           )}
@@ -77,7 +90,7 @@ const ChildrenDetails: React.FC<ChildrenDetailsProps> = ({ family, handleUpdate 
       <Box className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
         <Typography variant="h6" className="font-medium text-gray-800">
           <People className="mr-2 text-blue-500" sx={{ verticalAlign: 'middle', fontSize: '1.2rem' }} />
-          Children ({family.children.length})
+          School Children ({family.children.length})
         </Typography>
         {isEditing ? (
           <Box>
@@ -97,10 +110,10 @@ const ChildrenDetails: React.FC<ChildrenDetailsProps> = ({ family, handleUpdate 
       
       <CardContent className="p-6">
         {family.children.map((child, index) => (
-          <Box key={index} className="mb-8 pb-6 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
-            <Box className="flex justify-between items-center mb-4">
+          <Box key={index} className={(memberId === child.id ? "border bg-yellow-100 p-3 rounded-2xl " : " ") +"mb-8 pb-6 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0"}>
+            <Box className={ "flex justify-between items-center mb-4" }>
               <Typography variant="subtitle1" className="font-medium">
-                Child {index + 1}: {child.firstName} {child.lastName}
+                School Child {index + 1}: {child.firstName} {child.lastName}
               </Typography>
               {child.school && (
                 <Chip 
@@ -175,15 +188,10 @@ const ChildrenDetails: React.FC<ChildrenDetailsProps> = ({ family, handleUpdate 
                     name="school"
                     variant="outlined"
                     fullWidth
-                    select
                     value={editData[index].school || ''}
                     onChange={(e) => handleChange(index, e)}
                     InputProps={{ sx: { borderRadius: '8px' } }}
-                  >
-                    <MenuItem value="Al Min Haj National School">Al Min Haj National School</MenuItem>
-                    <MenuItem value="Oxford International">Oxford International</MenuItem>
-                    <MenuItem value="Harangala National School">Harangala National School</MenuItem>
-                  </TextField>
+                  />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <TextField
@@ -255,7 +263,7 @@ const ChildrenDetails: React.FC<ChildrenDetailsProps> = ({ family, handleUpdate 
                 }
               }}
             >
-              Add Child
+              Add School Child
             </Button>
           </Box>
         )}

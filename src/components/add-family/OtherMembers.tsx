@@ -28,7 +28,7 @@ const OtherMembers: React.FC<OtherMembersProps> = ({ family, handleChange, handl
     <Paper elevation={0} className="overflow-hidden rounded-xl border border-gray-200">
       <Box className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
         <Typography variant="h6" className="font-medium text-gray-800">
-          Other Members
+          Extended Family Members
         </Typography>
         <Button
           variant="outlined"
@@ -44,18 +44,18 @@ const OtherMembers: React.FC<OtherMembersProps> = ({ family, handleChange, handl
             },
           }}
         >
-          Add Member
+          Add Family Member
         </Button>
       </Box>
       <CardContent className="p-6">
         {family.otherMembers?.length === 0 ? (
-          <Typography className="text-center text-gray-500 py-4">No other members added yet</Typography>
+          <Typography className="text-center text-gray-500 py-4">No extended family members added yet</Typography>
         ) : (
           family.otherMembers?.map((member, index) => (
             <Box key={index} className="mb-8 pb-6 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
               <Box className="flex justify-between items-center mb-4">
                 <Typography variant="subtitle1" className="font-medium">
-                  Member {index + 1}
+                  Family Member {index + 1}
                 </Typography>
                 <IconButton onClick={() => handleRemoveOtherMember(index)} size="small" sx={{ color: "#ff3b30" }}>
                   <RemoveIcon />
@@ -155,7 +155,7 @@ const OtherMembers: React.FC<OtherMembersProps> = ({ family, handleChange, handl
                 },
               }}
             >
-              Add Member
+              Add Family Member
             </Button>
           </Box>
         )}

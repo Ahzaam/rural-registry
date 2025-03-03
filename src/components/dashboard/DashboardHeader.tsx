@@ -1,224 +1,270 @@
 import React from "react";
-import { Box, Typography, Avatar, useTheme } from "@mui/material";
+import {
+  Box,
+  Typography,
+  IconButton,
+  useTheme,
+  useMediaQuery,
+  Button,
+  Menu,
+  MenuItem,
+  Fade,
+  Divider,
+} from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
+import { User } from "firebase/auth";
 import { motion } from "framer-motion";
+import LogoutIcon from "@mui/icons-material/Logout";
+import MenuIcon from "@mui/icons-material/Menu";
+import AnnouncementIcon from "@mui/icons-material/Announcement";
+import {QrCode as QrCodeIcon} from "@mui/icons-material";
+import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import { useAuth } from "../../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
-import AnimatedButton from "../common/AnimatedButton";
 
 interface DashboardHeaderProps {
-  currentUser: { displayName: string; email?: string; photoURL?: string } | null;
+  currentUser: User | null;
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ currentUser }) => {
-  const { logout } = useAuth();
-  const navigate = useNavigate();
+  const { logout, isAdmin } = useAuth();
   const theme = useTheme();
-  
-  // Get user initials for the avatar
-  const getUserInitials = () => {
-    if (!currentUser?.displayName) return "?";
-    return currentUser.displayName
-      .split(" ")
-      .map(name => name[0])
-      .join("")
-      .toUpperCase()
-      .substring(0, 2);
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(menuAnchor);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setMenuAnchor(event.currentTarget);
   };
 
-  // Animation variants
-  const titleVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { 
-        duration: 0.6, 
-        ease: [0.22, 1, 0.36, 1] 
-      }
-    }
-  };
-
-  const subtitleVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { 
-        delay: 0.2, 
-        duration: 0.6 
-      }
-    }
-  };
-
-  const profileVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { 
-        delay: 0.3, 
-        duration: 0.5, 
-        type: "spring", 
-        stiffness: 200, 
-        damping: 15 
-      }
-    }
+  const handleClose = () => {
+    setMenuAnchor(null);
   };
 
   return (
     <Box
       sx={{
         display: "flex",
-        flexDirection: { xs: "column", md: "row" },
         justifyContent: "space-between",
-        alignItems: { xs: "stretch", md: "center" },
-        gap: { xs: 2, md: 0 },
-        mb: { xs: 1, md: 2 },
+        alignItems: "center",
+        mb: 2,
       }}
     >
-      <Box>
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={titleVariants}
-        >
-          <Typography
-            variant="h3"
-            component="h1"
-            sx={{
-              fontWeight: 700,
-              color: "#1d1d1f",
-              mb: 1,
-              fontSize: { xs: "1.75rem", md: "2.5rem" },
-              letterSpacing: "-0.5px",
-              backgroundImage: "linear-gradient(90deg, #0070c9, #5ac8fa)",
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              textShadow: "0 1px 2px rgba(0,0,0,0.04)"
-            }}
-          >
-            Village Registry
-          </Typography>
-        </motion.div>
-        
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={subtitleVariants}
-        >
-          <Typography
-            variant="subtitle1"
-            sx={{
-              color: "#86868b",
-              fontWeight: 500,
-              fontSize: { xs: "0.875rem", md: "1rem" },
-            }}
-          >
-            Manage and track family records efficiently
-          </Typography>
-        </motion.div>
-      </Box>
-      
       <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={profileVariants}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
       >
-        <Box
+        <Typography
+          variant="h4"
+          component="h1"
           sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 2.5,
-            padding: { xs: 2, md: 2.5 },
-            borderRadius: "20px",
-            backgroundColor: "rgba(255, 255, 255, 0.9)",
-            backdropFilter: "blur(20px)",
-            boxShadow: "0 4px 24px rgba(0, 0, 0, 0.06)",
-            border: "1px solid rgba(255, 255, 255, 0.8)",
-            transition: "all 0.3s ease",
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: "0 6px 28px rgba(0, 0, 0, 0.08)",
-            }
+            fontWeight: 700,
+            color: "#1F4C6B",
+            fontSize: { xs: "1.75rem", md: "2.5rem" },
+            backgroundImage: "linear-gradient(90deg, #1F4C6B, #2D6E9B)",
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            textShadow: "0 1px 2px rgba(0,0,0,0.04)",
           }}
         >
-          <Avatar 
-            src={currentUser?.photoURL || undefined}
+          Masjidul Minhaj
+        </Typography>
+      </motion.div>
+
+      {/* Navigation Links for desktop */}
+      {!isMobile && (
+        <Box
+          component={motion.div}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          sx={{
+            display: "flex",
+            gap: 2,
+            mx: "auto",
+          }}
+        >
+          <Button 
+            component={RouterLink} 
+            to="/scanner"
+            startIcon={<QrCodeIcon />}
             sx={{ 
-              width: 48,
-              height: 48,
-              bgcolor: theme.palette.primary.main,
-              boxShadow: "0 4px 12px rgba(0, 112, 201, 0.2)",
-              border: "2px solid white",
-              transition: "all 0.3s ease",
+              color: "#1F4C6B", 
+              fontWeight: 500,
+              borderRadius: 28,
+              px: 2,
+              textTransform: 'none',
+              fontSize: '1rem',
               '&:hover': {
-                transform: 'scale(1.05)',
-                boxShadow: "0 4px 16px rgba(0, 112, 201, 0.3)",
+                backgroundColor: 'rgba(31, 76, 107, 0.08)',
               }
             }}
           >
-            {getUserInitials()}
-          </Avatar>
+            Scan
+          </Button>
           
-          <Box sx={{ minWidth: 0 }}>
-            <Typography
-              variant="body1"
-              sx={{
-                fontWeight: 600,
-                fontSize: "1rem",
-                color: "#1d1d1f",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                mb: 0.5
+          <Button 
+            component={RouterLink} 
+            to="/aid-events"
+            startIcon={<VolunteerActivismIcon />}
+            sx={{ 
+              color: "#1F4C6B", 
+              fontWeight: 500,
+              borderRadius: 28,
+              px: 2,
+              textTransform: 'none',
+              fontSize: '1rem',
+              '&:hover': {
+                backgroundColor: 'rgba(31, 76, 107, 0.08)',
+              }
+            }}
+          >
+            Aid Events
+          </Button>
+          
+          {isAdmin && (
+            <Button 
+              component={RouterLink} 
+              to="/admin/announcements"
+              startIcon={<AnnouncementIcon />}
+              sx={{ 
+                color: "#1F4C6B", 
+                fontWeight: 500,
+                borderRadius: 28,
+                px: 2,
+                textTransform: 'none',
+                fontSize: '1rem',
+                '&:hover': {
+                  backgroundColor: 'rgba(31, 76, 107, 0.08)',
+                }
               }}
             >
-              {currentUser?.displayName || "User"}
-            </Typography>
-            <Box sx={{ 
-              display: "flex", 
-              alignItems: "center", 
-              gap: 2 
-            }}>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "#86868b",
-                  fontWeight: 500,
-                  fontSize: "0.85rem",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  maxWidth: "180px"
-                }}
-              >
-                {currentUser?.email || ""}
-              </Typography>
-              
-              <AnimatedButton
-                variant="outlined"
-                size="small"
-                onClick={logout}
-                sx={{
-                  borderRadius: '12px',
-                  borderColor: 'rgba(0, 112, 201, 0.5)',
-                  color: '#0070c9',
-                  fontSize: '0.8rem',
-                  py: 0.5,
-                  px: 2,
-                  minWidth: 'auto',
-                  '&:hover': {
-                    borderColor: '#0070c9',
-                    backgroundColor: 'rgba(0, 112, 201, 0.04)'
-                  }
-                }}
-              >
-                Logout
-              </AnimatedButton>
-            </Box>
-          </Box>
+              Announcements
+            </Button>
+          )}
         </Box>
-      </motion.div>
+      )}
+
+      {isMobile ? (
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <IconButton
+            onClick={handleMenuClick}
+            sx={{
+              backgroundColor: "rgba(31, 76, 107, 0.1)",
+              "&:hover": {
+                backgroundColor: "rgba(31, 76, 107, 0.15)",
+              },
+              mr: 1,
+            }}
+          >
+            <MenuIcon sx={{ color: "#1F4C6B" }} />
+          </IconButton>
+          
+          <Menu
+            anchorEl={menuAnchor}
+            open={open}
+            onClose={handleClose}
+            TransitionComponent={Fade}
+            PaperProps={{
+              elevation: 3,
+              sx: { 
+                borderRadius: 2,
+                minWidth: 200, 
+                mt: 1.5,
+                py: 1,
+                overflow: 'hidden',
+              }
+            }}
+          >
+            <MenuItem 
+              onClick={handleClose}
+              component={RouterLink}
+              to="/dashboard"
+              sx={{ py: 1.5, px: 2 }}
+            >
+              <QrCodeIcon sx={{ mr: 1.5, fontSize: '1.2rem', color: "#1F4C6B" }} />
+              <Typography variant="body1">Scan</Typography>
+            </MenuItem>
+            
+            <MenuItem 
+              onClick={handleClose}
+              component={RouterLink}
+              to="/aid-events"
+              sx={{ py: 1.5, px: 2 }}
+            >
+              <VolunteerActivismIcon sx={{ mr: 1.5, fontSize: '1.2rem', color: "#1F4C6B" }} />
+              <Typography variant="body1">Aid Events</Typography>
+            </MenuItem>
+            
+            {isAdmin && (
+              <MenuItem 
+                onClick={handleClose}
+                component={RouterLink}
+                to="/admin/announcements"
+                sx={{ py: 1.5, px: 2 }}
+              >
+                <AnnouncementIcon sx={{ mr: 1.5, fontSize: '1.2rem', color: "#1F4C6B" }} />
+                <Typography variant="body1">Announcements</Typography>
+              </MenuItem>
+            )}
+            
+            <Divider sx={{ my: 1 }} />
+            
+            <MenuItem 
+              onClick={() => {
+                handleClose();
+                logout();
+              }}
+              sx={{ py: 1.5, px: 2 }}
+            >
+              <LogoutIcon sx={{ mr: 1.5, fontSize: '1.2rem', color: "#DC3545" }} />
+              <Typography variant="body1" color="#DC3545">Logout</Typography>
+            </MenuItem>
+          </Menu>
+          
+          <IconButton
+            onClick={logout}
+            sx={{
+              backgroundColor: "rgba(31, 76, 107, 0.1)",
+              "&:hover": {
+                backgroundColor: "rgba(31, 76, 107, 0.15)",
+              },
+            }}
+          >
+            <LogoutIcon sx={{ color: "#1F4C6B" }} />
+          </IconButton>
+        </Box>
+      ) : (
+        <Box
+          component={motion.div}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            p: 1.5,
+            borderRadius: 2,
+            bgcolor: "rgba(31, 76, 107, 0.1)",
+            backdropFilter: "blur(20px)",
+          }}
+        >
+          <Typography variant="subtitle1" sx={{ color: "#1F4C6B", fontWeight: 500 }}>
+            {currentUser?.email}
+          </Typography>
+          <IconButton
+            size="small"
+            onClick={logout}
+            sx={{
+              color: "#1F4C6B",
+              "&:hover": { color: "#DC3545" },
+            }}
+          >
+            <LogoutIcon />
+          </IconButton>
+        </Box>
+      )}
     </Box>
   );
 };

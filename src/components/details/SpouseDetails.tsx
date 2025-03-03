@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Box, Typography, Paper, Grid, CardContent, TextField, IconButton, MenuItem } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  CardContent,
+  TextField,
+  IconButton,
+  MenuItem,
+} from "@mui/material";
 import { Person, Edit, Save, Cancel } from "@mui/icons-material";
 import { Family } from "../../types/types";
 import { formatDate } from "../../utils/dateUtils";
@@ -9,7 +18,10 @@ interface SpouseDetailsProps {
   handleUpdate: (updatedFamily: Partial<Family>) => void;
 }
 
-const SpouseDetails: React.FC<SpouseDetailsProps> = ({ family, handleUpdate }) => {
+const SpouseDetails: React.FC<SpouseDetailsProps> = ({
+  family,
+  handleUpdate,
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     firstName: family.spouse?.firstName || "",
@@ -23,13 +35,17 @@ const SpouseDetails: React.FC<SpouseDetailsProps> = ({ family, handleUpdate }) =
     contact: family.spouse?.contact || "",
   });
 
+  const memberId = new URLSearchParams(window.location.search).get("memberId");
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEditData({ ...editData, [name]: value });
   };
 
   const handleSave = () => {
-    handleUpdate({ spouse: { ...family.spouse, ...editData, id: family.spouse!.id } });
+    handleUpdate({
+      spouse: { ...family.spouse, ...editData, id: family.spouse!.id },
+    });
     setIsEditing(false);
   };
 
@@ -38,10 +54,24 @@ const SpouseDetails: React.FC<SpouseDetailsProps> = ({ family, handleUpdate }) =
   }
 
   return (
-    <Paper elevation={0} className="overflow-hidden rounded-xl border border-gray-200">
-      <Box className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+    <Paper
+      elevation={0}
+      className={
+        (memberId === family.spouse.id ? " border-yellow-400 " : " ") +
+        "overflow-hidden rounded-xl border border-gray-200"
+      }
+    >
+      <Box
+        className={
+          (memberId === family.spouse.id ? " bg-yellow-200 " : " ") +
+          "px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center"
+        }
+      >
         <Typography variant="h6" className="font-medium text-gray-800">
-          <Person className="mr-2 text-blue-500" sx={{ verticalAlign: "middle", fontSize: "1.2rem" }} />
+          <Person
+            className="mr-2 text-blue-500"
+            sx={{ verticalAlign: "middle", fontSize: "1.2rem" }}
+          />
           Spouse
         </Typography>
         {isEditing ? (
@@ -49,12 +79,18 @@ const SpouseDetails: React.FC<SpouseDetailsProps> = ({ family, handleUpdate }) =
             <IconButton onClick={handleSave} sx={{ color: "#0070c9" }}>
               <Save />
             </IconButton>
-            <IconButton onClick={() => setIsEditing(false)} sx={{ color: "#ff3b30" }}>
+            <IconButton
+              onClick={() => setIsEditing(false)}
+              sx={{ color: "#ff3b30" }}
+            >
               <Cancel />
             </IconButton>
           </Box>
         ) : (
-          <IconButton onClick={() => setIsEditing(true)} sx={{ color: "#0070c9" }}>
+          <IconButton
+            onClick={() => setIsEditing(true)}
+            sx={{ color: "#0070c9" }}
+          >
             <Edit />
           </IconButton>
         )}
@@ -185,7 +221,10 @@ const SpouseDetails: React.FC<SpouseDetailsProps> = ({ family, handleUpdate }) =
             {family.spouse.nic && (
               <Grid item xs={12} md={6}>
                 <Box className="mb-4">
-                  <Typography variant="subtitle2" className="text-gray-500 mb-1">
+                  <Typography
+                    variant="subtitle2"
+                    className="text-gray-500 mb-1"
+                  >
                     NIC
                   </Typography>
                   <Typography variant="body1" className="font-medium">
@@ -198,10 +237,15 @@ const SpouseDetails: React.FC<SpouseDetailsProps> = ({ family, handleUpdate }) =
             {family.spouse.dateOfBirth && (
               <Grid item xs={12} md={6}>
                 <Box className="mb-4">
-                  <Typography variant="subtitle2" className="text-gray-500 mb-1">
+                  <Typography
+                    variant="subtitle2"
+                    className="text-gray-500 mb-1"
+                  >
                     Date of Birth
                   </Typography>
-                  <Typography variant="body1">{formatDate(family.spouse.dateOfBirth)}</Typography>
+                  <Typography variant="body1">
+                    {formatDate(family.spouse.dateOfBirth)}
+                  </Typography>
                 </Box>
               </Grid>
             )}
@@ -220,10 +264,15 @@ const SpouseDetails: React.FC<SpouseDetailsProps> = ({ family, handleUpdate }) =
             {family.spouse.contact && (
               <Grid item xs={12} md={6}>
                 <Box className="mb-4">
-                  <Typography variant="subtitle2" className="text-gray-500 mb-1">
+                  <Typography
+                    variant="subtitle2"
+                    className="text-gray-500 mb-1"
+                  >
                     Contact
                   </Typography>
-                  <Typography variant="body1">{family.spouse.contact}</Typography>
+                  <Typography variant="body1">
+                    {family.spouse.contact}
+                  </Typography>
                 </Box>
               </Grid>
             )}
@@ -231,10 +280,15 @@ const SpouseDetails: React.FC<SpouseDetailsProps> = ({ family, handleUpdate }) =
             {family.spouse.occupation && (
               <Grid item xs={12} md={6}>
                 <Box className="mb-4">
-                  <Typography variant="subtitle2" className="text-gray-500 mb-1">
+                  <Typography
+                    variant="subtitle2"
+                    className="text-gray-500 mb-1"
+                  >
                     Occupation
                   </Typography>
-                  <Typography variant="body1">{family.spouse.occupation}</Typography>
+                  <Typography variant="body1">
+                    {family.spouse.occupation}
+                  </Typography>
                 </Box>
               </Grid>
             )}
@@ -242,10 +296,15 @@ const SpouseDetails: React.FC<SpouseDetailsProps> = ({ family, handleUpdate }) =
             {family.spouse.workLocation && (
               <Grid item xs={12} md={6}>
                 <Box className="mb-4">
-                  <Typography variant="subtitle2" className="text-gray-500 mb-1">
+                  <Typography
+                    variant="subtitle2"
+                    className="text-gray-500 mb-1"
+                  >
                     Work Location
                   </Typography>
-                  <Typography variant="body1">{family.spouse.workLocation}</Typography>
+                  <Typography variant="body1">
+                    {family.spouse.workLocation}
+                  </Typography>
                 </Box>
               </Grid>
             )}
@@ -253,10 +312,15 @@ const SpouseDetails: React.FC<SpouseDetailsProps> = ({ family, handleUpdate }) =
             {family.spouse.education && (
               <Grid item xs={12}>
                 <Box className="mb-4">
-                  <Typography variant="subtitle2" className="text-gray-500 mb-1">
+                  <Typography
+                    variant="subtitle2"
+                    className="text-gray-500 mb-1"
+                  >
                     Education
                   </Typography>
-                  <Typography variant="body1">{family.spouse.education}</Typography>
+                  <Typography variant="body1">
+                    {family.spouse.education}
+                  </Typography>
                 </Box>
               </Grid>
             )}

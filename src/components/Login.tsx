@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Typography, Alert, Stack, Paper, TextField, Divider } from "@mui/material";
+import { Typography, Alert, Stack, Paper, TextField, Divider, Box, Button } from "@mui/material";
 import { useAuth } from "../contexts/AuthContext";
-import { Navigate } from "react-router-dom";
-import { Google as GoogleIcon } from "@mui/icons-material";
+import { Navigate, Link as RouterLink } from "react-router-dom";
+import { Google as GoogleIcon, Announcement as AnnouncementIcon } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import AnimatedButton from "./common/AnimatedButton";
 import AnimatedPage from "./common/AnimatedPage";
@@ -69,7 +69,9 @@ const Login: React.FC = () => {
             borderRadius: '24px' 
           }}
         >
-          <div className="px-8 pt-16 pb-16 bg-white">
+         
+
+          <div className="px-8 pt-12 pb-16 bg-white">
             <AnimatedContainer animation="slide" delay={0.1}>
               {/* Logo with subtle animation */}
               <motion.div 
@@ -84,12 +86,12 @@ const Login: React.FC = () => {
                 }}
               >
                 <motion.div 
-                  className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center"
+                  className="w-20 h-20 rounded-full bg-[#1F4C6B] flex items-center justify-center"
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
                   <Typography variant="h4" className="text-white font-bold">
-                    HR
+                    MM
                   </Typography>
                 </motion.div>
               </motion.div>
@@ -104,7 +106,7 @@ const Login: React.FC = () => {
                   className="text-center text-3xl font-medium text-gray-900 tracking-tight mb-3"
                   sx={{ fontWeight: 600 }}
                 >
-                  Hapugastalawa Village Registry
+                  Masjidul Minhaj
                 </Typography>
 
                 <Typography 
@@ -169,8 +171,8 @@ const Login: React.FC = () => {
                     size="large"
                     sx={{
                       py: "14px",
-                      backgroundColor: "#0070c9",
-                      "&:hover": { backgroundColor: "#005ea3" },
+                      backgroundColor: "#1F4C6B",
+                      "&:hover": { backgroundColor: "#153449" },
                     }}
                   >
                     Sign In

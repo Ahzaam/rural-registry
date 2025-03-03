@@ -3,13 +3,85 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Function to check if the user is an admin
-     function isAdmin() {
+    function isAdmin() {
       return request.auth != null && 
         exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
-    // Match all documents in all collections
+
+    // Function to validate credentials match for token verification
+    function validateCredentials(tokenData, phone, nic) {
+      let familyData = get(/databases/$(database)/documents/families/$(tokenData.familyId)).data;
+      return familyData != null && 
+             familyData.headOfFamily.contact == phone && 
+             familyData.headOfFamily.nic == nic;
+    }
+
+    match /config/{configId} {
+      // Allow anyone to read config
+      allow read: if true;
+      
+      // Only admins can create, update, or delete config
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Match announcements collection - public read, admin write
+    match /announcements/{announcementId} {
+      // Allow anyone to read announcements
+      allow read: if true;
+      
+      // Only admins can create, update, or delete announcements
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Match profile tokens collection
+    match /profileTokens/{tokenId} {
+      // Anyone can read token metadata (masked details)
+      allow read: if true;
+      
+      // Allow token verification updates if credentials match
+      allow update: if 
+        // Check token is not expired
+        resource.data.expiresAt > request.time &&
+        // Check token is not already verified
+        !resource.data.isVerified &&
+        // Check verification attempts not exceeded
+        resource.data.verificationAttempts < 3 &&
+        (
+          // Allow incrementing verification attempts on failed verify
+          (request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['verificationAttempts', 'updatedAt']) &&
+           request.resource.data.verificationAttempts == resource.data.verificationAttempts + 1) ||
+          // Allow marking as verified if credentials match
+          (request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['isVerified', 'verifiedAt']) &&
+           request.resource.data.isVerified == true &&
+           validateCredentials(resource.data, request.query.phone, request.query.nic))
+        );
+
+      // Only admins can create or delete tokens
+      allow create: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Match families collection
+    match /families/{familyId} {
+      // Allow read access for valid verified tokens or admins
+      allow read: if 
+        // Public access with valid verified token
+        (request.auth == null && 
+         'token' in request.query && 
+         exists(/databases/$(database)/documents/profileTokens/$(request.query.token)) &&
+         get(/databases/$(database)/documents/profileTokens/$(request.query.token)).data.familyId == familyId &&
+         get(/databases/$(database)/documents/profileTokens/$(request.query.token)).data.isVerified == true) ||
+        // Admin access
+        isAdmin();
+
+      // Only admins can modify family data
+      allow write: if isAdmin();
+    }
+
+    // Match all other documents
     match /{document=**} {
-      // Only allow read and write if the user is an admin
       allow read, write: if isAdmin();
     }
   }
