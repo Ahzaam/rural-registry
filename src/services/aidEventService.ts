@@ -30,10 +30,10 @@ export const createAidEvent = async (event: Omit<AidEvent, "id" | "createdAt" | 
   return { ...event, id: docRef.id, createdAt: now, updatedAt: now };
 };
 
-export const updateAidEvent = async (id: string, event: Partial<AidEvent>) => {
-  const docRef = doc(db, EVENTS_COLLECTION, id);
-  await updateDoc(docRef, { ...event, updatedAt: Timestamp.now() });
-};
+// export const updateAidEvent = async (id: string, event: Partial<AidEvent>) => {
+//   const docRef = doc(db, EVENTS_COLLECTION, id);
+//   await updateDoc(docRef, { ...event, updatedAt: Timestamp.now() });
+// };
 
 export const getAidEvents = async () => {
   const q = query(collection(db, EVENTS_COLLECTION), orderBy("date", "desc"));
@@ -199,5 +199,13 @@ export const subscribeToEventRecords = (
       ...doc.data()
     })) as (Distribution | MonthlyContribution)[];
     callback(records);
+  });
+};
+
+export const updateAidEvent = async (eventId: string, event: AidEvent): Promise<void> => {
+  const eventRef = doc(db, 'aidEvents', eventId);
+  await updateDoc(eventRef, {
+    ...event,
+    updatedAt: Timestamp.now()
   });
 };

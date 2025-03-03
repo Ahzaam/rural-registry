@@ -26,6 +26,7 @@ import FamilyHistory from "./components/details/FamilyHistory";
 import { theme } from "./theme";
 import { getFeatureFlags } from "./services/featureFlagService";
 import { CircularProgress, Container } from "@mui/material";
+import EventSummary from "./components/aid/EventSummary";
 const ProtectedRoute = () => {
   const { currentUser, loading } = useAuth();
 
@@ -145,6 +146,7 @@ const App: React.FC = () => {
                   path="/aid-events/:eventId/manage-families"
                   element={<ManageEventFamilies />}
                 />
+                <Route path="/aid-events/:eventId/summary" element={<EventSummary />} />
               </Route>
 
               <Route element={<AdminRoute />}>

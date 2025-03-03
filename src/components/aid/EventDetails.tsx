@@ -14,7 +14,8 @@ import {
   TableRow,
   Paper,
   CircularProgress,
-  Chip
+  Chip,
+  Stack
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { AidEvent, Family, Distribution, MonthlyContribution } from '../../types/types';
@@ -84,17 +85,30 @@ export const EventDetails: React.FC<Props> = ({ event, onClose, onEventUpdated }
           <Typography variant="h6">
             {event.name}
           </Typography>
-          <Button
-            variant="contained"
-            onClick={() => navigate(`/aid-events/${event.id}/manage-families`)}
-            sx={{ 
-              borderRadius: '12px',
-              bgcolor: 'primary.main',
-              '&:hover': { bgcolor: 'primary.dark' }
-            }}
-          >
-            Manage Families
-          </Button>
+          <Stack direction="row" spacing={2}>
+            <Button
+              variant="contained"
+              onClick={() => navigate(`/aid-events/${event.id}/summary`)}
+              sx={{ 
+                borderRadius: '12px',
+                bgcolor: 'info.main',
+                '&:hover': { bgcolor: 'info.dark' }
+              }}
+            >
+              View Summary
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => navigate(`/aid-events/${event.id}/manage-families`)}
+              sx={{ 
+                borderRadius: '12px',
+                bgcolor: 'primary.main',
+                '&:hover': { bgcolor: 'primary.dark' }
+              }}
+            >
+              Manage Families
+            </Button>
+          </Stack>
         </Box>
       </DialogTitle>
       <DialogContent>

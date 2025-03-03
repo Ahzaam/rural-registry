@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Typography, Alert, Stack, Paper, TextField, Divider, Box, Button } from "@mui/material";
+import { Typography, Alert, Stack, Paper, TextField, Divider, Box, Button, Container } from "@mui/material";
 import { useAuth } from "../contexts/AuthContext";
 import { Navigate, Link as RouterLink } from "react-router-dom";
 import { Google as GoogleIcon, Announcement as AnnouncementIcon } from "@mui/icons-material";
@@ -59,64 +59,55 @@ const Login: React.FC = () => {
   }
 
   return (
-    <AnimatedPage>
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center px-4">
-        <Paper 
-          elevation={0} 
-          className="w-full max-w-md mx-auto overflow-hidden rounded-2xl shadow-xl"
-          sx={{ 
-            overflow: 'hidden',
-            borderRadius: '24px' 
-          }}
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        py: 4,
+      }}
+    >
+      <Container maxWidth="sm">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-         
-
-          <div className="px-8 pt-12 pb-16 bg-white">
-            <AnimatedContainer animation="slide" delay={0.1}>
-              {/* Logo with subtle animation */}
-              <motion.div 
-                className="flex justify-center mb-10"
-                initial={{ y: -20 }}
-                animate={{ y: 0 }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 260, 
-                  damping: 20,
-                  delay: 0.2 
+          <Paper
+            elevation={0}
+            sx={{
+              p: 4,
+              borderRadius: 3,
+              textAlign: 'center',
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+            }}
+          >
+            {/* Organization Logo & Name */}
+            <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Typography 
+                variant="h3" 
+                sx={{ 
+                  fontWeight: 600,
+                  color: '#1d1d1f',
+                  mb: 2
                 }}
               >
-                <motion.div 
-                  className="w-20 h-20 rounded-full bg-[#1F4C6B] flex items-center justify-center"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                >
-                  <Typography variant="h4" className="text-white font-bold">
-                    MM
-                  </Typography>
-                </motion.div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.6 }}
+                Masjidul-Minhaj
+              </Typography>
+              <Typography 
+                variant="subtitle1" 
+                sx={{ 
+                  color: '#86868b',
+                }}
               >
-                <Typography 
-                  component="h1" 
-                  className="text-center text-3xl font-medium text-gray-900 tracking-tight mb-3"
-                  sx={{ fontWeight: 600 }}
-                >
-                  Masjidul Minhaj
-                </Typography>
-
-                <Typography 
-                  className="text-center text-gray-500 mb-8" 
-                  variant="subtitle1"
-                >
-                  Admin Portal
-                </Typography>
-              </motion.div>
-            </AnimatedContainer>
+                Family Management System
+              </Typography>
+            </Box>
 
             {error && (
               <motion.div
@@ -130,78 +121,76 @@ const Login: React.FC = () => {
               </motion.div>
             )}
 
-            <AnimatedContainer animation="fade" delay={0.4}>
-              <form onSubmit={handleEmailAuth}>
-                <Stack spacing={3}>
-                  <TextField
-                    label="Email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    fullWidth
-                    required
-                    variant="outlined"
-                    autoComplete="username"
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "12px",
-                      },
-                    }}
-                  />
-                  <TextField
-                    label="Password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    fullWidth
-                    required
-                    variant="outlined"
-                    autoComplete="current-password"
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "12px",
-                      },
-                    }}
-                  />
-                  <AnimatedButton
-                    type="submit"
-                    variant="contained"
-                    loading={isLoading}
-                    fullWidth
-                    size="large"
-                    sx={{
-                      py: "14px",
-                      backgroundColor: "#1F4C6B",
-                      "&:hover": { backgroundColor: "#153449" },
-                    }}
-                  >
-                    Sign In
-                  </AnimatedButton>
-                </Stack>
-              </form>
+            <form onSubmit={handleEmailAuth}>
+              <Stack spacing={3}>
+                <TextField
+                  label="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  fullWidth
+                  required
+                  variant="outlined"
+                  autoComplete="username"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "12px",
+                    },
+                  }}
+                />
+                <TextField
+                  label="Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  fullWidth
+                  required
+                  variant="outlined"
+                  autoComplete="current-password"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "12px",
+                    },
+                  }}
+                />
+                <AnimatedButton
+                  type="submit"
+                  variant="contained"
+                  loading={isLoading}
+                  fullWidth
+                  size="large"
+                  sx={{
+                    py: "14px",
+                    backgroundColor: "#1F4C6B",
+                    "&:hover": { backgroundColor: "#153449" },
+                  }}
+                >
+                  Sign In
+                </AnimatedButton>
+              </Stack>
+            </form>
 
-              <Divider sx={{ my: 3 }}>or</Divider>
+            <Divider sx={{ my: 3 }}>or</Divider>
 
-              <AnimatedButton
-                variant="outlined"
-                onClick={handleGoogleSignIn}
-                loading={isGoogleLoading}
-                fullWidth
-                size="large"
-                startIcon={<GoogleIcon />}
-                sx={{
-                  py: "14px",
+            <AnimatedButton
+              variant="outlined"
+              onClick={handleGoogleSignIn}
+              loading={isGoogleLoading}
+              fullWidth
+              size="large"
+              startIcon={<GoogleIcon />}
+              sx={{
+                py: "14px",
+                borderColor: "#dadce0",
+                color: "#3c4043",
+                "&:hover": {
                   borderColor: "#dadce0",
-                  color: "#3c4043",
-                  "&:hover": {
-                    borderColor: "#dadce0",
-                    backgroundColor: "#f8f9fa",
-                  },
-                }}
-              >
-                Continue with Google
-              </AnimatedButton>
-            </AnimatedContainer>
+                  backgroundColor: "#f8f9fa",
+                },
+              }}
+            >
+              Continue with Google
+            </AnimatedButton>
 
             <motion.div
               initial={{ opacity: 0 }}
@@ -212,10 +201,83 @@ const Login: React.FC = () => {
                 Only authorized administrators can access this system.
               </Typography>
             </motion.div>
-          </div>
-        </Paper>
-      </div>
-    </AnimatedPage>
+
+            {/* Software Company Credit */}
+            <Box sx={{ mt: 4, pt: 4, borderTop: '1px solid rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 24, height: 24 }}>
+                  <svg width="24" height="24" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#c6a55c" />
+                        <stop offset="50%" stopColor="#f9d77f" />
+                        <stop offset="100%" stopColor="#c6a55c" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M350 250c0 55.23-44.77 100-100 100-55.23 0-100-44.77-100-100s44.77-100 100-100c30 0 56.79 13.43 75 34.58" 
+                          stroke="url(#goldGradient)" 
+                          stroke-width="24" 
+                          fill="none" 
+                          stroke-linecap="round"/>
+                    <line x1="295" y1="250" x2="350" y2="250" 
+                          stroke="url(#goldGradient)" 
+                          stroke-width="24" 
+                          stroke-linecap="round"/>
+                  </svg>
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      color: '#86868b',
+                      letterSpacing: '0.02em'
+                    }}
+                  >
+                    Powered by
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#1d1d1f',
+                      fontWeight: 500,
+                      letterSpacing: '0.02em'
+                    }}
+                  >
+                    Glide Ceylon
+                  </Typography>
+                </Box>
+              </Box>
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 0.5,
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: 1,
+                  bgcolor: 'rgba(66, 133, 244, 0.1)'
+                }}
+              >
+                <img
+                  src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48cGF0aCBmaWxsPSIjNDI4NWY0IiBkPSJNMjQgNGMtNy40NzMgMC0xMy41MjEgNi4wNDgtMTMuNTIxIDEzLjUyMSAwIDcuNDczIDYuMDQ4IDEzLjUyMSAxMy41MjEgMTMuNTIxIDcuNDczIDAgMTMuNTIxLTYuMDQ4IDEzLjUyMS0xMy41MjFDMzcuNTIxIDEwLjA0OCAzMS40NzMgNCAyNCA0eiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0yNCA5LjM3NWMzLjQyIDAgNi4yMzcgMi44MTcgNi4yMzcgNi4yMzdzLTIuODE3IDYuMjM3LTYuMjM3IDYuMjM3LTYuMjM3LTIuODE3LTYuMjM3LTYuMjM3UzIwLjU4IDkuMzc1IDI0IDkuMzc1eiIvPjwvc3ZnPg=="
+                  style={{ width: 14, height: 14 }}
+                />
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    color: '#4285f4',
+                    fontSize: '0.7rem',
+                    fontWeight: 500
+                  }}
+                >
+                  Secured by Google Cloud
+                </Typography>
+              </Box>
+            </Box>
+          </Paper>
+        </motion.div>
+      </Container>
+    </Box>
   );
 };
 

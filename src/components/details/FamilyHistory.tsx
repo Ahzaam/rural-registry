@@ -186,15 +186,37 @@ const FamilyHistory: React.FC = () => {
                                 : 'error'
                             }
                           />
-                              {payment.amount !== undefined && payment.amount > 0 && (
-                                <Typography variant="body2">
-                                  Amount: Rs. {payment.amount}
-                                </Typography>
-                              )}
+                          {payment.amount !== undefined && payment.amount > 0 && (
+                            <Typography variant="body2">
+                              Amount: Rs. {payment.amount}
+                            </Typography>
+                          )}
                           <Typography variant="body2" color="text.secondary">
                             {formatDate(payment.date instanceof Timestamp ? payment.date.toDate() : payment.date)}
                           </Typography>
                         </Box>
+                        {payment.items && payment.items.length > 0 && (
+                          <Box mt={2}>
+                            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                              Items Received:
+                            </Typography>
+                            <Box display="flex" gap={1} flexWrap="wrap">
+                              {payment.items.map((item, idx) => (
+                                <Chip
+                                  key={idx}
+                                  label={`${item.itemName} ${item.quantity ? `(${item.quantity}${item.unit ? ' ' + item.unit : ''})` : ''}`}
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{ 
+                                    borderRadius: '8px',
+                                    bgcolor: 'background.paper',
+                                    borderColor: 'primary.light'
+                                  }}
+                                />
+                              ))}
+                            </Box>
+                          </Box>
+                        )}
                       </Box>
                     </Grid>
                   ))}

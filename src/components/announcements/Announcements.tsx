@@ -678,6 +678,80 @@ const Announcements: React.FC = () => {
           </Grid>
         </Container>
       </Box>
+
+      {/* Branding */}
+      <Box sx={{ mt: 6, textAlign: 'center' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ width: 40, height: 40 }}>
+            <svg width="40" height="40" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#c6a55c" />
+                  <stop offset="50%" stopColor="#f9d77f" />
+                  <stop offset="100%" stopColor="#c6a55c" />
+                </linearGradient>
+              </defs>
+              <path d="M350 250c0 55.23-44.77 100-100 100-55.23 0-100-44.77-100-100s44.77-100 100-100c30 0 56.79 13.43 75 34.58" 
+                    stroke="url(#goldGradient)" 
+                    stroke-width="24" 
+                    fill="none" 
+                    stroke-linecap="round"/>
+              <line x1="295" y1="250" x2="350" y2="250" 
+                    stroke="url(#goldGradient)" 
+                    stroke-width="24" 
+                    stroke-linecap="round"/>
+            </svg>
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                color: '#86868b',
+                letterSpacing: '0.02em'
+              }}
+            >
+              Powered by
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color: '#1d1d1f',
+                fontWeight: 500,
+                letterSpacing: '0.02em'
+              }}
+            >
+              Glide Ceylon
+            </Typography>
+          </Box>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 0.5,
+              ml: 2,
+              px: 1,
+              py: 0.5,
+              borderRadius: 1,
+              bgcolor: 'rgba(66, 133, 244, 0.1)'
+            }}
+          >
+            <img
+              src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48cGF0aCBmaWxsPSIjNDI4NWY0IiBkPSJNMjQgNGMtNy40NzMgMC0xMy41MjEgNi4wNDgtMTMuNTIxIDEzLjUyMSAwIDcuNDczIDYuMDQ4IDEzLjUyMSAxMy41MjEgMTMuNTIxIDcuNDczIDAgMTMuNTIxLTYuMDQ4IDEzLjUyMS0xMy41MjFDMzcuNTIxIDEwLjA0OCAzMS40NzMgNCAyNCA0eiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0yNCA5LjM3NWMzLjQyIDAgNi4yMzcgMi44MTcgNi4yMzcgNi4yMzdzLTIuODE3IDYuMjM3LTYuMjM3IDYuMjM3LTYuMjM3LTIuODE3LTYuMjM3LTYuMjM3UzIwLjU4IDkuMzc1IDI0IDkuMzc1eiIvPjwvc3ZnPg=="
+              style={{ width: 14, height: 14 }}
+            />
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                color: '#4285f4',
+                fontSize: '0.7rem',
+                fontWeight: 500
+              }}
+            >
+              Secured by Google Cloud
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
     </Box>
   );
 };

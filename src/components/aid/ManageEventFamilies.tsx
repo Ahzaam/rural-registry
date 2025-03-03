@@ -21,6 +21,7 @@ import {
   Toolbar,
   Stack,
   useTheme,
+  FormControlLabel,
 } from "@mui/material";
 import {
   ArrowBack,
@@ -81,6 +82,11 @@ export const ManageEventFamilies = () => {
   const [scanError, setScanError] = useState<string | null>(null);
   const [loadingQRDetails, setLoadingQRDetails] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<string>("");
+  const [selectedItems, setSelectedItems] = useState<{
+    itemName: string;
+    quantity: number;
+    unit?: string;
+  }[]>([]);
 
   useEffect(() => {
     if (eventId) loadData();
@@ -175,7 +181,7 @@ export const ManageEventFamilies = () => {
           ? Number(paymentAmount) || event.targetAmount || 0
           : 0;
 
-      // Add to payment history
+      // Add to payment history with items for distribution events
       await addPaymentRecord(familyId, {
         eventId: event.id,
         eventName: event.name,
@@ -183,22 +189,27 @@ export const ManageEventFamilies = () => {
         status: newStatus,
         date: Timestamp.now(),
         type: event.type as "distribution" | "collection",
+        ...(event.type === "distribution" && newStatus === "distributed" ? { items: selectedItems } : {})
       });
 
       if (event.type === "distribution") {
         await updateDistribution(record.id, {
           ...(record as Distribution),
           status: newStatus as "distributed" | "skipped",
+          distributedItems: newStatus === "distributed" ? selectedItems : undefined,
+          distributedAt: newStatus === "distributed" ? Timestamp.now() : undefined
         });
       } else {
         await updateContribution(record.id, {
           ...(record as MonthlyContribution),
           amount,
           status: newStatus as "paid" | "excused",
+          paidAt: newStatus === "paid" ? Timestamp.now() : undefined
         });
       }
       await loadData(false);
       setPaymentAmount("");
+      setSelectedItems([]);
     } catch (error) {
       console.error("Error updating status:", error);
     }
@@ -926,6 +937,59 @@ export const ManageEventFamilies = () => {
                           </Box>
                         </Box>
 
+                        {event.type === "distribution" && event.items && event.items.length > 0 && (
+                          <Box sx={{ mb: 3 }}>
+                            <Typography variant="subtitle2" sx={{ mb: 1 }}>Select Distributed Items</Typography>
+                            <Stack spacing={2}>
+                              {event.items.map((item, index) => (
+                                <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                  <FormControlLabel
+                                    control={
+                                      <Checkbox 
+                                        checked={selectedItems.some(si => si.itemName === item.name)}
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            setSelectedItems([...selectedItems, { 
+                                              itemName: item.name,
+                                              quantity: item.quantity || 1,
+                                              unit: item.unit
+                                            }]);
+                                          } else {
+                                            setSelectedItems(selectedItems.filter(si => si.itemName !== item.name));
+                                          }
+                                        }}
+                                      />
+                                    }
+                                    label={item.name}
+                                  />
+                                  {selectedItems.some(si => si.itemName === item.name) && (
+                                    <TextField
+                                      type="number"
+                                      size="small"
+                                      label="Quantity"
+                                      value={selectedItems.find(si => si.itemName === item.name)?.quantity || ""}
+                                      onChange={(e) => {
+                                        const value = parseInt(e.target.value);
+                                        if (!isNaN(value) && value > 0) {
+                                          setSelectedItems(selectedItems.map(si => 
+                                            si.itemName === item.name 
+                                              ? { ...si, quantity: value }
+                                              : si
+                                          ));
+                                        }
+                                      }}
+                                      InputProps={{
+                                        endAdornment: item.unit ? ` ${item.unit}` : undefined,
+                                      }}
+                                      sx={{ width: 120 }}
+                                    />
+                                  )}
+                                </Box>
+                              ))}
+                            </Stack>
+                          </Box>
+                        )}
+
                         {scanError ? (
                           <motion.div
                             initial={{ opacity: 0, y: 10 }}
@@ -1269,6 +1333,59 @@ export const ManageEventFamilies = () => {
                       </Typography>
                     </Box>
                   </Box>
+
+                  {event.type === "distribution" && event.items && event.items.length > 0 && (
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Select Distributed Items</Typography>
+                      <Stack spacing={2}>
+                        {event.items.map((item, index) => (
+                          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <FormControlLabel
+                              control={
+                                <Checkbox 
+                                  checked={selectedItems.some(si => si.itemName === item.name)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedItems([...selectedItems, { 
+                                        itemName: item.name,
+                                        quantity: item.quantity || 1,
+                                        unit: item.unit
+                                      }]);
+                                    } else {
+                                      setSelectedItems(selectedItems.filter(si => si.itemName !== item.name));
+                                    }
+                                  }}
+                                />
+                              }
+                              label={item.name}
+                            />
+                            {selectedItems.some(si => si.itemName === item.name) && (
+                              <TextField
+                                type="number"
+                                size="small"
+                                label="Quantity"
+                                value={selectedItems.find(si => si.itemName === item.name)?.quantity || ""}
+                                onChange={(e) => {
+                                  const value = parseInt(e.target.value);
+                                  if (!isNaN(value) && value > 0) {
+                                    setSelectedItems(selectedItems.map(si => 
+                                      si.itemName === item.name 
+                                        ? { ...si, quantity: value }
+                                        : si
+                                    ));
+                                  }
+                                }}
+                                InputProps={{
+                                  endAdornment: item.unit ? ` ${item.unit}` : undefined,
+                                }}
+                                sx={{ width: 120 }}
+                              />
+                            )}
+                          </Box>
+                        ))}
+                      </Stack>
+                    </Box>
+                  )}
 
                   {scanError ? (
                     <motion.div

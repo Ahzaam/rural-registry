@@ -61,7 +61,7 @@ const ProfileVerification: React.FC = () => {
         
       console.log('Starting verification with:', { token, phone: state.phone, nic: state.nic });
       await verifyProfileToken(token, state.phone, state.nic);
-      return
+      // return
       console.log('Verification successful, redirecting to family profile...');
       setState(prev => ({ ...prev, verified: true, loading: false }));
       

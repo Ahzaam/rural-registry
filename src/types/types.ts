@@ -65,16 +65,13 @@ export interface Distribution {
   id: string;
   eventId: string;
   familyId: string;
-  status: 'pending' | 'distributed' | 'skipped';
-  items?: {
-    name: string;
+  status: 'pending' | 'distributed' | 'skipped' | 'excused';
+  timestamp: Date;
+  distributedItems?: {
+    itemName: string;
     quantity: number;
     unit?: string;
   }[];
-  notes?: string;
-  distributedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface MonthlyContribution {
@@ -120,4 +117,9 @@ export interface PaymentRecord {
   status: 'paid' | 'distributed' | 'skipped' | 'excused';
   date: Date;
   type: 'distribution' | 'collection';
+  items?: {
+    name: string;
+    quantity: number;
+    unit?: string;
+  }[];
 }
