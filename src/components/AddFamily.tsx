@@ -1,14 +1,28 @@
 import React, { useState } from "react";
-import { Container, Typography, Button, Box, IconButton } from "@mui/material";
+import { 
+  Container, 
+  Typography, 
+  Button, 
+  Box, 
+  IconButton, 
+  Paper, 
+  Divider,
+  Collapse,
+  Stack
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { addFamily } from "../services/familyService";
 import { Family } from "../types/types";
 import { ArrowBack } from "@mui/icons-material";
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import HouseholdInformation from "./add-family/HouseholdInformation";
 import HeadOfFamily from "./add-family/HeadOfFamily";
 import Spouse from "./add-family/Spouse";
 import Children from "./add-family/Children";
 import OtherMembers from "./add-family/OtherMembers";
+import DocumentUploader from "./add-family/DocumentUploader";
 import { Person } from "../types/types";
 
 const AddFamily: React.FC = () => {
@@ -44,6 +58,7 @@ const AddFamily: React.FC = () => {
     income: "",
     landOwnership: "owned",
   });
+  const [showUploader, setShowUploader] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
@@ -68,6 +83,47 @@ const AddFamily: React.FC = () => {
         },
       });
     }
+  };
+
+  const handleDataExtracted = (extractedData: Partial<Family>) => {
+    // Merge extracted data with the current family data
+    const updatedFamily = { ...family };
+    
+    // Update simple fields
+    if (extractedData.homeId) updatedFamily.homeId = extractedData.homeId;
+    if (extractedData.address) updatedFamily.address = extractedData.address;
+    if (extractedData.income) updatedFamily.income = extractedData.income;
+    if (extractedData.landOwnership) updatedFamily.landOwnership = extractedData.landOwnership;
+    
+    // Update head of family if data exists
+    if (extractedData.headOfFamily) {
+      updatedFamily.headOfFamily = {
+        ...updatedFamily.headOfFamily,
+        ...extractedData.headOfFamily
+      };
+    }
+    
+    // Update spouse if data exists
+    if (extractedData.spouse) {
+      updatedFamily.spouse = {
+        ...updatedFamily.spouse,
+        ...extractedData.spouse
+      };
+    }
+    
+    // Update children if data exists
+    if (extractedData.children && extractedData.children.length > 0) {
+      updatedFamily.children = extractedData.children;
+    }
+    
+    // Update other members if data exists
+    if (extractedData.otherMembers && extractedData.otherMembers.length > 0) {
+      updatedFamily.otherMembers = extractedData.otherMembers;
+    }
+    
+    setFamily(updatedFamily);
+    // Auto-collapse the uploader after successful extraction
+    setShowUploader(false);
   };
 
   const handleAddChild = () => {
@@ -140,9 +196,54 @@ const AddFamily: React.FC = () => {
             Add New Family
           </Typography>
         </Box>
+        <Button
+          variant="outlined"
+          onClick={() => navigate("/batch-create")}
+          sx={{
+            borderColor: "#0070c9",
+            color: "#0070c9",
+            borderRadius: "8px",
+            "&:hover": {
+              borderColor: "#005ea3",
+              backgroundColor: "rgba(0, 112, 201, 0.04)",
+            },
+          }}
+        >
+          Batch Create
+        </Button>
       </Box>
 
       <form onSubmit={handleSubmit} className="space-y-8">
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Button
+            onClick={() => setShowUploader(!showUploader)}
+            fullWidth
+            variant="outlined"
+            color="primary"
+            startIcon={<UploadFileIcon />}
+            endIcon={showUploader ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            sx={{ 
+              justifyContent: 'space-between',
+              mb: showUploader ? 2 : 0
+            }}
+          >
+            <Stack direction="column" alignItems="flex-start" spacing={0}>
+              <Typography variant="subtitle1">Auto-fill Form from Document</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {showUploader 
+                  ? "Hide document uploader" 
+                  : "Upload a document to automatically extract family information"}
+              </Typography>
+            </Stack>
+          </Button>
+          
+          <Collapse in={showUploader}>
+            <Box sx={{ mt: 2 }}>
+              <DocumentUploader onDataExtracted={handleDataExtracted} />
+            </Box>
+          </Collapse>
+        </Paper>
+
         <HouseholdInformation family={family} handleChange={handleChange} />
         <HeadOfFamily family={family} handleChange={handleChange} />
         <Spouse family={family} handleChange={handleChange} />

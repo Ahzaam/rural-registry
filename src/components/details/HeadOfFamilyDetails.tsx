@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Box, Typography, Paper, Grid, CardContent, TextField, IconButton, MenuItem } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  CardContent,
+  TextField,
+  IconButton,
+  MenuItem,
+} from "@mui/material";
 import { Person, Edit, Save, Cancel } from "@mui/icons-material";
 import { Family } from "../../types/types";
 import { formatDate } from "../../utils/dateUtils";
@@ -7,9 +16,14 @@ import { formatDate } from "../../utils/dateUtils";
 interface HeadOfFamilyDetailsProps {
   family: Family;
   handleUpdate: (updatedFamily: Partial<Family>) => void;
+  readOnly?: boolean;
 }
 
-const HeadOfFamilyDetails: React.FC<HeadOfFamilyDetailsProps> = ({ family, handleUpdate }) => {
+const HeadOfFamilyDetails: React.FC<HeadOfFamilyDetailsProps> = ({
+  family,
+  handleUpdate,
+  readOnly = false
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     firstName: family.headOfFamily.firstName,
@@ -33,31 +47,53 @@ const HeadOfFamilyDetails: React.FC<HeadOfFamilyDetailsProps> = ({ family, handl
     setIsEditing(false);
   };
 
+  const memberId = new URLSearchParams(window.location.search).get("memberId");
+
   return (
-    <Paper elevation={0} className="overflow-hidden rounded-xl border border-gray-200">
-      <Box className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+    <Paper
+      elevation={0}
+      className={
+        (memberId === family.headOfFamily.id ? " border-yellow-400 " : " ") +
+        "overflow-hidden rounded-xl border border-gray-200"
+      }
+    >
+      <Box
+        className={
+          (memberId === family.headOfFamily.id ? " bg-yellow-200 " : " ") +
+          "px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center"
+        }
+      >
         <Typography variant="h6" className="font-medium text-gray-800">
-          <Person className="mr-2 text-blue-500" sx={{ verticalAlign: "middle", fontSize: "1.2rem" }} />
+          <Person
+            className="mr-2 text-blue-500"
+            sx={{ verticalAlign: "middle", fontSize: "1.2rem" }}
+          />
           Head of Family
         </Typography>
-        {isEditing ? (
+        {!readOnly && (isEditing ? (
           <Box>
             <IconButton onClick={handleSave} sx={{ color: "#0070c9" }}>
               <Save />
             </IconButton>
-            <IconButton onClick={() => setIsEditing(false)} sx={{ color: "#ff3b30" }}>
+            <IconButton
+              onClick={() => setIsEditing(false)}
+              sx={{ color: "#ff3b30" }}
+            >
               <Cancel />
             </IconButton>
           </Box>
         ) : (
-          <IconButton onClick={() => setIsEditing(true)} sx={{ color: "#0070c9" }}>
+          <IconButton
+            onClick={() => setIsEditing(true)}
+            sx={{ color: "#0070c9" }}
+          >
             <Edit />
           </IconButton>
-        )}
+        ))}
       </Box>
 
       <CardContent className="p-6">
-        {isEditing ? (
+        {isEditing && !readOnly ? (
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <TextField
@@ -194,7 +230,9 @@ const HeadOfFamilyDetails: React.FC<HeadOfFamilyDetailsProps> = ({ family, handl
                 <Typography variant="subtitle2" className="text-gray-500 mb-1">
                   Date of Birth
                 </Typography>
-                <Typography variant="body1">{formatDate(family.headOfFamily.dateOfBirth)}</Typography>
+                <Typography variant="body1">
+                  {formatDate(family.headOfFamily.dateOfBirth)}
+                </Typography>
               </Box>
             </Grid>
 
@@ -212,10 +250,15 @@ const HeadOfFamilyDetails: React.FC<HeadOfFamilyDetailsProps> = ({ family, handl
             {family.headOfFamily.contact && (
               <Grid item xs={12} md={6}>
                 <Box className="mb-4">
-                  <Typography variant="subtitle2" className="text-gray-500 mb-1">
+                  <Typography
+                    variant="subtitle2"
+                    className="text-gray-500 mb-1"
+                  >
                     Contact
                   </Typography>
-                  <Typography variant="body1">{family.headOfFamily.contact}</Typography>
+                  <Typography variant="body1">
+                    {family.headOfFamily.contact}
+                  </Typography>
                 </Box>
               </Grid>
             )}
@@ -223,10 +266,15 @@ const HeadOfFamilyDetails: React.FC<HeadOfFamilyDetailsProps> = ({ family, handl
             {family.headOfFamily.occupation && (
               <Grid item xs={12} md={6}>
                 <Box className="mb-4">
-                  <Typography variant="subtitle2" className="text-gray-500 mb-1">
+                  <Typography
+                    variant="subtitle2"
+                    className="text-gray-500 mb-1"
+                  >
                     Occupation
                   </Typography>
-                  <Typography variant="body1">{family.headOfFamily.occupation}</Typography>
+                  <Typography variant="body1">
+                    {family.headOfFamily.occupation}
+                  </Typography>
                 </Box>
               </Grid>
             )}
@@ -234,10 +282,15 @@ const HeadOfFamilyDetails: React.FC<HeadOfFamilyDetailsProps> = ({ family, handl
             {family.headOfFamily.workLocation && (
               <Grid item xs={12} md={6}>
                 <Box className="mb-4">
-                  <Typography variant="subtitle2" className="text-gray-500 mb-1">
+                  <Typography
+                    variant="subtitle2"
+                    className="text-gray-500 mb-1"
+                  >
                     Work Location
                   </Typography>
-                  <Typography variant="body1">{family.headOfFamily.workLocation}</Typography>
+                  <Typography variant="body1">
+                    {family.headOfFamily.workLocation}
+                  </Typography>
                 </Box>
               </Grid>
             )}
@@ -245,10 +298,15 @@ const HeadOfFamilyDetails: React.FC<HeadOfFamilyDetailsProps> = ({ family, handl
             {family.headOfFamily.education && (
               <Grid item xs={12}>
                 <Box className="mb-4">
-                  <Typography variant="subtitle2" className="text-gray-500 mb-1">
+                  <Typography
+                    variant="subtitle2"
+                    className="text-gray-500 mb-1"
+                  >
                     Education
                   </Typography>
-                  <Typography variant="body1">{family.headOfFamily.education}</Typography>
+                  <Typography variant="body1">
+                    {family.headOfFamily.education}
+                  </Typography>
                 </Box>
               </Grid>
             )}
