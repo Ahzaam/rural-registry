@@ -19,7 +19,7 @@ import AnimatedButton from "./common/AnimatedButton";
 const FamilyDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const { currentUser, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const [family, setFamily] = useState<Family | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -29,13 +29,13 @@ const FamilyDetails: React.FC = () => {
       if (id) {
         try {
           // Pass token from query params for authorization
-          const token = searchParams.get('token');
-          const options = token ? { queryParams: { token } } : undefined;
-          const familyData = await getFamilyById(id, options);
+          // const token = searchParams.get("token");
+          // const options = token ? { queryParams: { token } } : undefined;
+          const familyData = await getFamilyById(id);
           setFamily(familyData);
         } catch (error) {
           console.error("Error fetching family details:", error);
-          navigate('/');
+          navigate("/");
         } finally {
           setLoading(false);
         }
@@ -47,7 +47,7 @@ const FamilyDetails: React.FC = () => {
 
   const handleUpdate = async (updatedFamily: Partial<Family>) => {
     if (!isAdmin) return; // Prevent updates for non-admin users
-    
+
     if (family && family.id) {
       const newFamily = { ...family, ...updatedFamily };
       setFamily(newFamily);
@@ -121,7 +121,7 @@ const FamilyDetails: React.FC = () => {
                 The family you're looking for doesn't exist or you don't have permission to view it.
               </Typography>
             </motion.div>
-            
+
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
               <AnimatedButton
                 variant="contained"
@@ -226,39 +226,19 @@ const FamilyDetails: React.FC = () => {
                     <Grid item xs={12} md={8}>
                       <Stack spacing={3}>
                         <AnimatedContainer animation="fade" delay={0.2}>
-                          <HouseholdInformationDetails 
-                            family={family!} 
-                            handleUpdate={handleUpdate} 
-                            readOnly={!isAdmin}
-                          />
+                          <HouseholdInformationDetails family={family!} handleUpdate={handleUpdate} readOnly={!isAdmin} />
                         </AnimatedContainer>
                         <AnimatedContainer animation="fade" delay={0.3}>
-                          <HeadOfFamilyDetails 
-                            family={family!} 
-                            handleUpdate={handleUpdate}
-                            readOnly={!isAdmin}
-                          />
+                          <HeadOfFamilyDetails family={family!} handleUpdate={handleUpdate} />
                         </AnimatedContainer>
                         <AnimatedContainer animation="fade" delay={0.4}>
-                          <SpouseDetails 
-                            family={family!} 
-                            handleUpdate={handleUpdate}
-                            readOnly={!isAdmin}
-                          />
+                          <SpouseDetails family={family!} handleUpdate={handleUpdate} />
                         </AnimatedContainer>
                         <AnimatedContainer animation="fade" delay={0.5}>
-                          <ChildrenDetails 
-                            family={family!} 
-                            handleUpdate={handleUpdate}
-                            readOnly={!isAdmin}
-                          />
+                          <ChildrenDetails family={family!} handleUpdate={handleUpdate} />
                         </AnimatedContainer>
                         <AnimatedContainer animation="fade" delay={0.6}>
-                          <OtherMembersDetails 
-                            family={family!} 
-                            handleUpdate={handleUpdate}
-                            readOnly={!isAdmin}
-                          />
+                          <OtherMembersDetails family={family!} handleUpdate={handleUpdate} />
                         </AnimatedContainer>
                       </Stack>
                     </Grid>

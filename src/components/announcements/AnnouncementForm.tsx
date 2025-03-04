@@ -1,25 +1,24 @@
 // filepath: f:\PROGRAMMING\JavaScript\rural-registry\src\components\announcements\AnnouncementForm.tsx
-import React, { useState, useEffect } from 'react';
-import { 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  Button, 
-  TextField, 
-  MenuItem, 
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  MenuItem,
   FormControlLabel,
   Switch,
   Grid,
-  Box,
   Typography,
   CircularProgress,
   useTheme,
-  InputLabel
-} from '@mui/material';
-import { createAnnouncement, updateAnnouncement } from '../../services/announcementService';
-import { Announcement } from '../../types/types';
-import { motion } from 'framer-motion';
+  InputLabel,
+} from "@mui/material";
+import { createAnnouncement, updateAnnouncement } from "../../services/announcementService";
+import { Announcement } from "../../types/types";
+import { motion } from "framer-motion";
 
 interface AnnouncementFormProps {
   open: boolean;
@@ -33,28 +32,28 @@ const MotionButton = motion(Button);
 // Helper function to format date to YYYY-MM-DD for date inputs
 const formatDateForInput = (date: Date): string => {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
 
 const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, announcement, userId }) => {
   const initialFormState = {
-    title: '',
-    content: '',
-    type: 'general',
+    title: "",
+    content: "",
+    type: "general" as "general" | "event" | "prayer" | "eid" | "ramadan" | "other",
     visibleFrom: formatDateForInput(new Date()),
     visibleUntil: formatDateForInput(new Date(new Date().setMonth(new Date().getMonth() + 1))), // Default 1 month
-    priority: 'medium',
+    priority: "medium" as "medium" | "high" | "low",
     isActive: true,
-    imageUrl: '',
-    linkUrl: '',
-    linkText: '',
+    imageUrl: "",
+    linkUrl: "",
+    linkText: "",
   };
-  
+
   const [formData, setFormData] = useState(initialFormState);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const theme = useTheme();
 
   useEffect(() => {
@@ -67,9 +66,9 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
         visibleUntil: formatDateForInput(new Date(announcement.visibleUntil)),
         priority: announcement.priority,
         isActive: announcement.isActive,
-        imageUrl: announcement.imageUrl || '',
-        linkUrl: announcement.linkUrl || '',
-        linkText: announcement.linkText || '',
+        imageUrl: announcement.imageUrl || "",
+        linkUrl: announcement.linkUrl || "",
+        linkText: announcement.linkText || "",
       });
     } else {
       setFormData(initialFormState);
@@ -80,13 +79,13 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     });
   };
 
   const handleSubmit = async () => {
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       if (announcement) {
@@ -95,7 +94,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
           ...formData,
           visibleFrom: new Date(formData.visibleFrom),
           visibleUntil: new Date(formData.visibleUntil),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
       } else {
         // Create new announcement
@@ -103,55 +102,50 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
           ...formData,
           visibleFrom: new Date(formData.visibleFrom),
           visibleUntil: new Date(formData.visibleUntil),
-          createdBy: userId
+          createdBy: userId,
         });
       }
-      
+
       onClose();
     } catch (err) {
-      console.error('Error saving announcement:', err);
-      setError('Failed to save announcement. Please try again.');
+      console.error("Error saving announcement:", err);
+      setError("Failed to save announcement. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={onClose}
       fullWidth
       maxWidth="md"
       PaperProps={{
-        sx: { 
+        sx: {
           borderRadius: 2,
-          overflow: 'hidden'
-        }
+          overflow: "hidden",
+        },
       }}
     >
-      <DialogTitle sx={{ 
-        bgcolor: theme.palette.primary.main, 
-        color: 'white',
-        pb: 3,
-        pt: 3,
-        fontWeight: 'bold',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        {announcement ? 'Edit Announcement' : 'Create New Announcement'}
+      <DialogTitle
+        sx={{
+          bgcolor: theme.palette.primary.main,
+          color: "white",
+          pb: 3,
+          pt: 3,
+          fontWeight: "bold",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        {announcement ? "Edit Announcement" : "Create New Announcement"}
         <FormControlLabel
-          control={
-            <Switch
-              checked={formData.isActive}
-              onChange={handleInputChange}
-              name="isActive"
-              color="warning"
-            />
-          }
+          control={<Switch checked={formData.isActive} onChange={handleInputChange} name="isActive" color="warning" />}
           label={
-            <Typography variant="body2" sx={{ color: 'white' }}>
-              {formData.isActive ? 'Active' : 'Inactive'}
+            <Typography variant="body2" sx={{ color: "white" }}>
+              {formData.isActive ? "Active" : "Inactive"}
             </Typography>
           }
         />
@@ -171,7 +165,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
               sx={{ mb: 2 }}
             />
           </Grid>
-          
+
           <Grid item xs={12} sm={6}>
             <TextField
               select
@@ -190,7 +184,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
               <MenuItem value="other">Other</MenuItem>
             </TextField>
           </Grid>
-          
+
           <Grid item xs={12} sm={6}>
             <TextField
               select
@@ -206,9 +200,11 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
               <MenuItem value="low">Low</MenuItem>
             </TextField>
           </Grid>
-          
+
           <Grid item xs={12} sm={6}>
-            <InputLabel htmlFor="visibleFrom" sx={{ mb: 1 }}>Visible From</InputLabel>
+            <InputLabel htmlFor="visibleFrom" sx={{ mb: 1 }}>
+              Visible From
+            </InputLabel>
             <TextField
               id="visibleFrom"
               name="visibleFrom"
@@ -220,9 +216,11 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
-          
+
           <Grid item xs={12} sm={6}>
-            <InputLabel htmlFor="visibleUntil" sx={{ mb: 1 }}>Visible Until</InputLabel>
+            <InputLabel htmlFor="visibleUntil" sx={{ mb: 1 }}>
+              Visible Until
+            </InputLabel>
             <TextField
               id="visibleUntil"
               name="visibleUntil"
@@ -234,7 +232,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
-          
+
           <Grid item xs={12}>
             <TextField
               label="Image URL"
@@ -246,7 +244,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
               placeholder="https://example.com/image.jpg"
             />
           </Grid>
-          
+
           <Grid item xs={12}>
             <TextField
               label="Content"
@@ -260,7 +258,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
               rows={6}
             />
           </Grid>
-          
+
           <Grid item xs={12} sm={6}>
             <TextField
               label="Link URL"
@@ -272,7 +270,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
               placeholder="https://example.com"
             />
           </Grid>
-          
+
           <Grid item xs={12} sm={6}>
             <TextField
               label="Link Text"
@@ -285,7 +283,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
             />
           </Grid>
         </Grid>
-        
+
         {error && (
           <Typography color="error" sx={{ mt: 2 }}>
             {error}
@@ -293,13 +291,7 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
         )}
       </DialogContent>
       <DialogActions sx={{ px: 3, py: 3 }}>
-        <Button 
-          onClick={onClose}
-          variant="outlined"
-          color="inherit"
-          sx={{ borderRadius: 28 }}
-          disabled={loading}
-        >
+        <Button onClick={onClose} variant="outlined" color="inherit" sx={{ borderRadius: 28 }} disabled={loading}>
           Cancel
         </Button>
         <MotionButton
@@ -308,14 +300,14 @@ const AnnouncementForm: React.FC<AnnouncementFormProps> = ({ open, onClose, anno
           onClick={handleSubmit}
           disabled={loading || !formData.title || !formData.content}
           startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
-          sx={{ 
+          sx={{
             borderRadius: 28,
-            px: 4
+            px: 4,
           }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.98 }}
         >
-          {announcement ? 'Save Changes' : 'Create Announcement'}
+          {announcement ? "Save Changes" : "Create Announcement"}
         </MotionButton>
       </DialogActions>
     </Dialog>

@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  Outlet,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { ThemeProvider } from "@mui/material";
-import { AnimatePresence } from "framer-motion";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import QRScanner from "./components/QRScanner";
@@ -91,21 +84,13 @@ const App: React.FC = () => {
         <React.Fragment>
           <svg width={0} height={0}>
             <defs>
-              <linearGradient
-                id="my_gradient"
-                x1="0%"
-                y1="0%"
-                x2="0%"
-                y2="100%"
-              >
+              <linearGradient id="my_gradient" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" stopColor="#e01cd5" />
                 <stop offset="100%" stopColor="#1CB5E0" />
               </linearGradient>
             </defs>
           </svg>
-          <CircularProgress
-            sx={{ "svg circle": { stroke: "url(#my_gradient)" } }}
-          />
+          <CircularProgress sx={{ "svg circle": { stroke: "url(#my_gradient)" } }} />
         </React.Fragment>
       </Container>
     );
@@ -119,15 +104,7 @@ const App: React.FC = () => {
             <Routes>
               <Route
                 path="/"
-                element={
-                  loading ? (
-                    <LoadingComponent />
-                  ) : landingEnabled ? (
-                    <Announcements />
-                  ) : (
-                    <Navigate to="/login" replace />
-                  )
-                }
+                element={loading ? <LoadingComponent /> : landingEnabled ? <Announcements /> : <Navigate to="/login" replace />}
               />
 
               <Route path="/login" element={<Login />} />
@@ -142,18 +119,12 @@ const App: React.FC = () => {
                 <Route path="/families/:id" element={<FamilyDetails />} />
                 <Route path="/families/:id/history" element={<FamilyHistory />} />
                 <Route path="/aid-events" element={<AidEvents />} />
-                <Route
-                  path="/aid-events/:eventId/manage-families"
-                  element={<ManageEventFamilies />}
-                />
+                <Route path="/aid-events/:eventId/manage-families" element={<ManageEventFamilies />} />
                 <Route path="/aid-events/:eventId/summary" element={<EventSummary />} />
               </Route>
 
               <Route element={<AdminRoute />}>
-                <Route
-                  path="/admin/announcements"
-                  element={<AnnouncementsAdmin />}
-                />
+                <Route path="/admin/announcements" element={<AnnouncementsAdmin />} />
               </Route>
             </Routes>
           </Router>

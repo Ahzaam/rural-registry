@@ -1,6 +1,6 @@
 {
-  "name": "Rural Registry",
-  "short_name": "Rural Registry",
+  "name": "Masjidul Mihaj",
+  "short_name": "Majidul Minhaj",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -8,9 +8,9 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/vite.svg",
+      "src": "/public/glide-ceylon.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ],
   "permissions": ["camera"],

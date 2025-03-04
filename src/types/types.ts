@@ -1,10 +1,12 @@
+import { Timestamp } from "firebase/firestore";
+
 export interface Person {
   id: string;
   firstName: string;
   lastName: string;
   nic: string; // National Identity Card
   dateOfBirth: string;
-  gender: 'male' | 'female' | 'other';
+  gender: "male" | "female" | "other";
   occupation?: string;
   workLocation?: string;
   education?: string;
@@ -29,7 +31,7 @@ export interface Family {
   children: Child[];
   otherMembers?: OtherMember[];
   income?: string;
-  landOwnership?: 'owned' | 'rented' | 'other';
+  landOwnership?: "owned" | "rented" | "other";
   createdAt: Date;
   updatedAt: Date;
   homeHistory?: HomeHistory[];
@@ -49,8 +51,8 @@ export interface AidEvent {
   name: string;
   description?: string;
   date: Date;
-  type: 'distribution' | 'collection' | string;
-  status: 'planned' | 'ongoing' | 'completed';
+  type: "distribution" | "collection" | string;
+  status: "planned" | "ongoing" | "completed";
   items?: {
     name: string;
     quantity?: number;
@@ -65,13 +67,15 @@ export interface Distribution {
   id: string;
   eventId: string;
   familyId: string;
-  status: 'pending' | 'distributed' | 'skipped' | 'excused';
+  updatedAt: Date | { seconds: number; nanoseconds: number } | number;
+  status: "pending" | "distributed" | "skipped" | "excused";
   timestamp: Date;
   distributedItems?: {
     itemName: string;
     quantity: number;
     unit?: string;
   }[];
+  distributedAt?: Date | Timestamp;
 }
 
 export interface MonthlyContribution {
@@ -79,8 +83,8 @@ export interface MonthlyContribution {
   eventId: string;
   familyId: string;
   amount: number;
-  status: 'pending' | 'paid' | 'excused';
-  paidAt?: Date;
+  status: "pending" | "paid" | "excused";
+  paidAt?: Date | Timestamp;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -90,11 +94,11 @@ export interface Announcement {
   id: string;
   title: string;
   content: string;
-  type: 'general' | 'event' | 'prayer' | 'eid' | 'ramadan' | 'other';
+  type: "general" | "event" | "prayer" | "eid" | "ramadan" | "other";
   imageUrl?: string;
   visibleFrom: Date;
   visibleUntil: Date;
-  priority: 'high' | 'medium' | 'low';
+  priority: "high" | "medium" | "low";
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
@@ -105,20 +109,21 @@ export interface Announcement {
 
 export interface HomeHistory {
   address: string;
-  landOwnership: 'owned' | 'rented' | 'other';
-  fromDate: Date;
-  toDate?: Date;
+  landOwnership: "owned" | "rented" | "other";
+  fromDate: Date | Timestamp | any;
+  toDate?: Date | any;
 }
 
 export interface PaymentRecord {
   eventId: string;
   eventName: string;
   amount?: number;
-  status: 'paid' | 'distributed' | 'skipped' | 'excused';
-  date: Date;
-  type: 'distribution' | 'collection';
+  status: "paid" | "distributed" | "skipped" | "excused";
+  date: Date | Timestamp | any;
+  type: "distribution" | "collection";
   items?: {
     name: string;
+    itemName?: string;
     quantity: number;
     unit?: string;
   }[];

@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Divider, Grid, Chip, IconButton, Container, CircularProgress } from '@mui/material';
-import { Family, HomeHistory, PaymentRecord } from '../../types/types';
-import { formatDate } from '../../utils/dateUtils';
-import { motion } from 'framer-motion';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getFamilyById } from '../../services/familyService';
-import { ChevronLeft } from '@mui/icons-material';
-import AnimatedPage from '../common/AnimatedPage';
-import { Timestamp } from 'firebase/firestore';
+import React, { useState, useEffect } from "react";
+import { Box, Typography, Paper, Grid, Chip, IconButton, Container, CircularProgress } from "@mui/material";
+import { Family } from "../../types/types";
+import { formatDate } from "../../utils/dateUtils";
+import { motion } from "framer-motion";
+import { useParams, useNavigate } from "react-router-dom";
+import { getFamilyById } from "../../services/familyService";
+import { ChevronLeft } from "@mui/icons-material";
+import AnimatedPage from "../common/AnimatedPage";
+import { Timestamp } from "firebase/firestore";
 
 const FamilyHistory: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,7 +23,7 @@ const FamilyHistory: React.FC = () => {
           setFamily(familyData);
         } catch (error) {
           console.error("Error fetching family details:", error);
-          navigate('/dashboard');
+          navigate("/dashboard");
         } finally {
           setLoading(false);
         }
@@ -116,7 +116,7 @@ const FamilyHistory: React.FC = () => {
                 <Grid container spacing={3}>
                   {sortedHomeHistory.map((history, index) => (
                     <Grid item xs={12} key={index}>
-                      <Box 
+                      <Box
                         component={motion.div}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -127,14 +127,16 @@ const FamilyHistory: React.FC = () => {
                           {history.address}
                         </Typography>
                         <Box display="flex" alignItems="center" gap={2} mb={1}>
-                          <Chip 
+                          <Chip
                             label={history.landOwnership}
                             size="small"
-                            color={history.landOwnership === 'owned' ? 'success' : 'primary'}
+                            color={history.landOwnership === "owned" ? "success" : "primary"}
                           />
                           <Typography variant="body2" color="text.secondary">
-                            {formatDate(history.fromDate instanceof Timestamp ? history.fromDate.toDate() : history.fromDate)} - 
-                            {history.toDate ? formatDate(history.toDate instanceof Timestamp ? history.toDate.toDate() : history.toDate) : 'Present'}
+                            {formatDate(history.fromDate instanceof Timestamp ? history.fromDate.toDate() : history.fromDate)} -
+                            {history.toDate
+                              ? formatDate(history.toDate instanceof Timestamp ? history.toDate.toDate() : history.toDate)
+                              : "Present"}
                           </Typography>
                         </Box>
                       </Box>
@@ -142,7 +144,9 @@ const FamilyHistory: React.FC = () => {
                   ))}
                 </Grid>
               ) : (
-                <Typography color="text.secondary" align="center">No home history available</Typography>
+                <Typography color="text.secondary" align="center">
+                  No home history available
+                </Typography>
               )}
             </Box>
           </Paper>
@@ -159,7 +163,7 @@ const FamilyHistory: React.FC = () => {
                 <Grid container spacing={3}>
                   {sortedPaymentHistory.map((payment, index) => (
                     <Grid item xs={12} key={index}>
-                      <Box 
+                      <Box
                         component={motion.div}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -170,26 +174,20 @@ const FamilyHistory: React.FC = () => {
                           {payment.eventName}
                         </Typography>
                         <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
-                          <Chip 
-                            label={payment.type}
-                            size="small"
-                            color={payment.type === 'distribution' ? 'info' : 'warning'}
-                          />
-                          <Chip 
+                          <Chip label={payment.type} size="small" color={payment.type === "distribution" ? "info" : "warning"} />
+                          <Chip
                             label={payment.status}
                             size="small"
                             color={
-                              payment.status === 'paid' || payment.status === 'distributed'
-                                ? 'success'
-                                : payment.status === 'excused'
-                                ? 'warning'
-                                : 'error'
+                              payment.status === "paid" || payment.status === "distributed"
+                                ? "success"
+                                : payment.status === "excused"
+                                ? "warning"
+                                : "error"
                             }
                           />
                           {payment.amount !== undefined && payment.amount > 0 && (
-                            <Typography variant="body2">
-                              Amount: Rs. {payment.amount}
-                            </Typography>
+                            <Typography variant="body2">Amount: Rs. {payment.amount}</Typography>
                           )}
                           <Typography variant="body2" color="text.secondary">
                             {formatDate(payment.date instanceof Timestamp ? payment.date.toDate() : payment.date)}
@@ -204,13 +202,15 @@ const FamilyHistory: React.FC = () => {
                               {payment.items.map((item, idx) => (
                                 <Chip
                                   key={idx}
-                                  label={`${item.itemName} ${item.quantity ? `(${item.quantity}${item.unit ? ' ' + item.unit : ''})` : ''}`}
+                                  label={`${item.itemName} ${
+                                    item.quantity ? `(${item.quantity}${item.unit ? " " + item.unit : ""})` : ""
+                                  }`}
                                   size="small"
                                   variant="outlined"
-                                  sx={{ 
-                                    borderRadius: '8px',
-                                    bgcolor: 'background.paper',
-                                    borderColor: 'primary.light'
+                                  sx={{
+                                    borderRadius: "8px",
+                                    bgcolor: "background.paper",
+                                    borderColor: "primary.light",
                                   }}
                                 />
                               ))}
@@ -222,7 +222,9 @@ const FamilyHistory: React.FC = () => {
                   ))}
                 </Grid>
               ) : (
-                <Typography color="text.secondary" align="center">No payment history available</Typography>
+                <Typography color="text.secondary" align="center">
+                  No payment history available
+                </Typography>
               )}
             </Box>
           </Paper>

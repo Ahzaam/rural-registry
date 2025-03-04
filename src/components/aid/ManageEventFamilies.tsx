@@ -23,19 +23,9 @@ import {
   useTheme,
   FormControlLabel,
 } from "@mui/material";
-import {
-  ArrowBack,
-  QrCode as QrCodeIcon,
-  Close,
-  Add as AddIcon,
-} from "@mui/icons-material";
+import { ArrowBack, QrCode as QrCodeIcon, Close, Add as AddIcon } from "@mui/icons-material";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import {
-  AidEvent,
-  Family,
-  Distribution,
-  MonthlyContribution,
-} from "../../types/types";
+import { AidEvent, Family, Distribution, MonthlyContribution } from "../../types/types";
 import {
   getAidEvent,
   createDistribution,
@@ -66,14 +56,10 @@ export const ManageEventFamilies = () => {
   const [loading, setLoading] = useState(true);
   const [event, setEvent] = useState<AidEvent | null>(null);
   const [families, setFamilies] = useState<Family[]>([]);
-  const [records, setRecords] = useState<
-    (Distribution | MonthlyContribution)[]
-  >([]);
+  const [records, setRecords] = useState<(Distribution | MonthlyContribution)[]>([]);
   const [selectedFamilies, setSelectedFamilies] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showQRScanner, setShowQRScanner] = useState(
-    searchParams.get("qr") === "true"
-  );
+  const [showQRScanner, setShowQRScanner] = useState(searchParams.get("qr") === "true");
   const [showAddFamilies, setShowAddFamilies] = useState(false);
   const [scannedFamily, setScannedFamily] = useState<EventFamily | null>(null);
   const [showFamilyPanel, setShowFamilyPanel] = useState(false);
@@ -82,11 +68,13 @@ export const ManageEventFamilies = () => {
   const [scanError, setScanError] = useState<string | null>(null);
   const [loadingQRDetails, setLoadingQRDetails] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<string>("");
-  const [selectedItems, setSelectedItems] = useState<{
-    itemName: string;
-    quantity: number;
-    unit?: string;
-  }[]>([]);
+  const [selectedItems, setSelectedItems] = useState<
+    {
+      itemName: string;
+      quantity: number;
+      unit?: string;
+    }[]
+  >([]);
 
   useEffect(() => {
     if (eventId) loadData();
@@ -95,13 +83,9 @@ export const ManageEventFamilies = () => {
   useEffect(() => {
     if (!eventId || !event?.type) return;
 
-    const unsubscribe = subscribeToEventRecords(
-      eventId,
-      event.type as "distribution" | "collection",
-      (updatedRecords) => {
-        setRecords(updatedRecords);
-      }
-    );
+    const unsubscribe = subscribeToEventRecords(eventId, event.type as "distribution" | "collection", (updatedRecords) => {
+      setRecords(updatedRecords);
+    });
 
     return () => unsubscribe();
   }, [eventId, event?.type]);
@@ -109,10 +93,7 @@ export const ManageEventFamilies = () => {
   const loadData = async (loading = true) => {
     try {
       setLoading(loading);
-      const [fetchedEvent, fetchedFamilies] = await Promise.all([
-        getAidEvent(eventId!),
-        getFamilies(),
-      ]);
+      const [fetchedEvent, fetchedFamilies] = await Promise.all([getAidEvent(eventId!), getFamilies()]);
 
       setEvent(fetchedEvent);
       setPaymentAmount(fetchedEvent.targetAmount?.toString() || "");
@@ -145,6 +126,7 @@ export const ManageEventFamilies = () => {
             eventId: event.id,
             familyId,
             status: "pending",
+            timestamp: new Date(),
           });
         } else {
           return createContribution({
@@ -165,10 +147,7 @@ export const ManageEventFamilies = () => {
     }
   };
 
-  const handleStatusUpdate = async (
-    familyId: string,
-    newStatus: "distributed" | "paid" | "skipped" | "excused"
-  ) => {
+  const handleStatusUpdate = async (familyId: string, newStatus: "distributed" | "paid" | "skipped" | "excused") => {
     if (!event) return;
 
     try {
@@ -176,10 +155,7 @@ export const ManageEventFamilies = () => {
       if (!record) return;
 
       // If no amount entered and it's a collection event, use the event's target amount
-      const amount =
-        event.type === "collection"
-          ? Number(paymentAmount) || event.targetAmount || 0
-          : 0;
+      const amount = event.type === "collection" ? Number(paymentAmount) || event.targetAmount || 0 : 0;
 
       // Add to payment history with items for distribution events
       await addPaymentRecord(familyId, {
@@ -189,7 +165,15 @@ export const ManageEventFamilies = () => {
         status: newStatus,
         date: Timestamp.now(),
         type: event.type as "distribution" | "collection",
-        ...(event.type === "distribution" && newStatus === "distributed" ? { items: selectedItems } : {})
+        ...(event.type === "distribution" && newStatus === "distributed"
+          ? {
+              items: selectedItems.map((item) => ({
+                name: item.itemName,
+                quantity: item.quantity,
+                unit: item.unit,
+              })),
+            }
+          : {}),
       });
 
       if (event.type === "distribution") {
@@ -197,14 +181,14 @@ export const ManageEventFamilies = () => {
           ...(record as Distribution),
           status: newStatus as "distributed" | "skipped",
           distributedItems: newStatus === "distributed" ? selectedItems : undefined,
-          distributedAt: newStatus === "distributed" ? Timestamp.now() : undefined
+          distributedAt: newStatus === "distributed" ? Timestamp.now() : undefined,
         });
       } else {
         await updateContribution(record.id, {
           ...(record as MonthlyContribution),
           amount,
           status: newStatus as "paid" | "excused",
-          paidAt: newStatus === "paid" ? Timestamp.now() : undefined
+          paidAt: newStatus === "paid" ? Timestamp.now() : undefined,
         });
       }
       await loadData(false);
@@ -227,9 +211,7 @@ export const ManageEventFamilies = () => {
       if (record) {
         if (record.status === "distributed" || record.status === "paid") {
           family.eligible = false;
-          setScanError(
-            `This family has already been marked as ${record.status}`
-          );
+          setScanError(`This family has already been marked as ${record.status}`);
         } else {
           family.eligible = true;
           setScanError(null);
@@ -249,18 +231,10 @@ export const ManageEventFamilies = () => {
 
     try {
       const latestRecord =
-        event.type === "distribution"
-          ? await getDistribution(eventId, familyId)
-          : await getContribution(eventId, familyId);
+        event.type === "distribution" ? await getDistribution(eventId, familyId) : await getContribution(eventId, familyId);
 
-      if (
-        latestRecord &&
-        (latestRecord.status === "distributed" ||
-          latestRecord.status === "paid")
-      ) {
-        setScanError(
-          `This family has already been marked as ${latestRecord.status} by another device`
-        );
+      if (latestRecord && (latestRecord.status === "distributed" || latestRecord.status === "paid")) {
+        setScanError(`This family has already been marked as ${latestRecord.status} by another device`);
         return false;
       }
 
@@ -283,10 +257,7 @@ export const ManageEventFamilies = () => {
 
     const record = records.find((r) => r.familyId === scannedFamily.id);
     if (record) {
-      await handleStatusUpdate(
-        scannedFamily.id,
-        event.type === "distribution" ? "distributed" : "paid"
-      );
+      await handleStatusUpdate(scannedFamily.id, event.type === "distribution" ? "distributed" : "paid");
       setShowFamilyPanel(false);
       setScannedFamily(null);
       setTempHomeId("");
@@ -302,10 +273,7 @@ export const ManageEventFamilies = () => {
     if (family) {
       const record = records.find((r) => r.familyId === family.id);
 
-      if (
-        record &&
-        (record.status === "distributed" || record.status === "paid")
-      ) {
+      if (record && (record.status === "distributed" || record.status === "paid")) {
         family.eligible = false;
         setScanError(`This family has already been marked as ${record.status}`);
       } else {
@@ -343,10 +311,7 @@ export const ManageEventFamilies = () => {
         <Container maxWidth="lg" sx={{ py: 4 }}>
           <AnimatedContainer animation="slide" delay={0.1}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <IconButton
                   onClick={() => navigate(`/aid-events`)}
                   sx={{
@@ -428,10 +393,7 @@ export const ManageEventFamilies = () => {
                       <Typography variant="h6" sx={{ color: "#1d1d1f" }}>
                         Add Families to Event
                       </Typography>
-                      <IconButton
-                        onClick={() => setShowAddFamilies(false)}
-                        size="small"
-                      >
+                      <IconButton onClick={() => setShowAddFamilies(false)} size="small">
                         <Close />
                       </IconButton>
                     </Box>
@@ -442,21 +404,16 @@ export const ManageEventFamilies = () => {
                       fullWidth
                       sx={{ mb: 2 }}
                     />
-                    <TableContainer>
-                      <Table>
+                    <TableContainer sx={{ maxHeight: 440 }}>
+                      <Table stickyHeader aria-label="sticky table">
                         <TableHead>
                           <TableRow>
                             <TableCell padding="checkbox">
                               <Checkbox
-                                checked={
-                                  selectedFamilies.length ===
-                                  filteredFamilies.length
-                                }
+                                checked={selectedFamilies.length === filteredFamilies.length}
                                 onChange={(e) => {
                                   if (e.target.checked) {
-                                    setSelectedFamilies(
-                                      filteredFamilies.map((f) => f.id)
-                                    );
+                                    setSelectedFamilies(filteredFamilies.map((f) => f.id));
                                   } else {
                                     setSelectedFamilies([]);
                                   }
@@ -479,31 +436,19 @@ export const ManageEventFamilies = () => {
                               >
                                 <TableCell padding="checkbox">
                                   <Checkbox
-                                    checked={selectedFamilies.includes(
-                                      family.id
-                                    )}
+                                    checked={selectedFamilies.includes(family.id)}
                                     onChange={(e) => {
                                       if (e.target.checked) {
-                                        setSelectedFamilies([
-                                          ...selectedFamilies,
-                                          family.id,
-                                        ]);
+                                        setSelectedFamilies([...selectedFamilies, family.id]);
                                       } else {
-                                        setSelectedFamilies(
-                                          selectedFamilies.filter(
-                                            (id) => id !== family.id
-                                          )
-                                        );
+                                        setSelectedFamilies(selectedFamilies.filter((id) => id !== family.id));
                                       }
                                     }}
                                   />
                                 </TableCell>
+                                <TableCell sx={{ color: "#1d1d1f" }}>{family.homeId}</TableCell>
                                 <TableCell sx={{ color: "#1d1d1f" }}>
-                                  {family.homeId}
-                                </TableCell>
-                                <TableCell sx={{ color: "#1d1d1f" }}>
-                                  {family.headOfFamily.firstName}{" "}
-                                  {family.headOfFamily.lastName}
+                                  {family.headOfFamily.firstName} {family.headOfFamily.lastName}
                                 </TableCell>
                               </motion.tr>
                             ))}
@@ -553,25 +498,21 @@ export const ManageEventFamilies = () => {
                   <Typography variant="h6" sx={{ mb: 3, color: "#1d1d1f" }}>
                     Event Families
                   </Typography>
-                  <TableContainer>
-                    <Table>
+                  <TableContainer sx={{ maxHeight: 440 }}>
+                    <Table stickyHeader aria-label="sticky table">
                       <TableHead>
                         <TableRow>
                           <TableCell>Home ID</TableCell>
                           <TableCell>Head of Family</TableCell>
                           <TableCell>Status</TableCell>
-                          {event.type === "collection" && (
-                            <TableCell align="right">Amount</TableCell>
-                          )}
+                          {event.type === "collection" && <TableCell align="right">Amount</TableCell>}
                           <TableCell align="right">Action</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         <AnimatePresence mode="popLayout">
                           {records.map((record) => {
-                            const family = families.find(
-                              (f) => f.id === record.familyId
-                            );
+                            const family = families.find((f) => f.id === record.familyId);
                             if (!family) return null;
 
                             return (
@@ -582,12 +523,9 @@ export const ManageEventFamilies = () => {
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{ duration: 0.3 }}
                               >
+                                <TableCell sx={{ color: "#1d1d1f" }}>{family.homeId}</TableCell>
                                 <TableCell sx={{ color: "#1d1d1f" }}>
-                                  {family.homeId}
-                                </TableCell>
-                                <TableCell sx={{ color: "#1d1d1f" }}>
-                                  {family.headOfFamily.firstName}{" "}
-                                  {family.headOfFamily.lastName}
+                                  {family.headOfFamily.firstName} {family.headOfFamily.lastName}
                                 </TableCell>
                                 <TableCell>
                                   <Chip
@@ -596,53 +534,37 @@ export const ManageEventFamilies = () => {
                                     sx={{
                                       borderRadius: "12px",
                                       bgcolor:
-                                        record.status === "distributed" ||
-                                        record.status === "paid"
+                                        record.status === "distributed" || record.status === "paid"
                                           ? "success.lighter"
-                                          : record.status === "skipped" ||
-                                            record.status === "excused"
+                                          : record.status === "skipped" || record.status === "excused"
                                           ? "warning.lighter"
                                           : "info.lighter",
                                       color:
-                                        record.status === "distributed" ||
-                                        record.status === "paid"
+                                        record.status === "distributed" || record.status === "paid"
                                           ? "success.main"
-                                          : record.status === "skipped" ||
-                                            record.status === "excused"
+                                          : record.status === "skipped" || record.status === "excused"
                                           ? "warning.main"
                                           : "info.main",
                                     }}
                                   />
                                 </TableCell>
                                 {event.type === "collection" && (
-                                  <TableCell
-                                    align="right"
-                                    sx={{ color: "#1d1d1f" }}
-                                  >
-                                    Rs.{" "}
-                                    {(record as MonthlyContribution).amount ||
-                                      0}
+                                  <TableCell align="right" sx={{ color: "#1d1d1f" }}>
+                                    Rs. {(record as MonthlyContribution).amount || 0}
                                   </TableCell>
                                 )}
                                 <TableCell align="right">
-                                  <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                  >
+                                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                     <Button
                                       variant="outlined"
                                       size="small"
                                       onClick={() => {
                                         // Determine if the family is eligible to update based on current status
-                                        const isEligibleForUpdate =
-                                          record.status !== "distributed" &&
-                                          record.status !== "paid";
+                                        const isEligibleForUpdate = record.status !== "distributed" && record.status !== "paid";
 
                                         // Set the proper error message if already distributed or paid
                                         if (!isEligibleForUpdate) {
-                                          setScanError(
-                                            `This family has already been marked as ${record.status}`
-                                          );
+                                          setScanError(`This family has already been marked as ${record.status}`);
                                         } else {
                                           setScanError(null);
                                         }
@@ -716,16 +638,10 @@ export const ManageEventFamilies = () => {
                   >
                     <Close />
                   </IconButton>
-                  <Typography
-                    variant="h6"
-                    sx={{ flexGrow: 1, color: "#1d1d1f" }}
-                  >
+                  <Typography variant="h6" sx={{ flexGrow: 1, color: "#1d1d1f" }}>
                     Scan QR Code
                   </Typography>
-                  <Button
-                    variant="outlined"
-                    onClick={() => setManualModeInScanner(!manualModeInScanner)}
-                  >
+                  <Button variant="outlined" onClick={() => setManualModeInScanner(!manualModeInScanner)}>
                     Manual Input
                   </Button>
                 </Toolbar>
@@ -796,14 +712,8 @@ export const ManageEventFamilies = () => {
                     scannedFamily && (
                       <Box sx={{ position: "relative" }}>
                         <Box sx={{ mt: 4, textAlign: "center" }}>
-                          <Typography
-                            variant="h5"
-                            fontWeight="bold"
-                            gutterBottom
-                            sx={{ color: "#1d1d1f" }}
-                          >
-                            {scannedFamily.headOfFamily.firstName}{" "}
-                            {scannedFamily.headOfFamily.lastName}
+                          <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ color: "#1d1d1f" }}>
+                            {scannedFamily.headOfFamily.firstName} {scannedFamily.headOfFamily.lastName}
                           </Typography>
 
                           <Chip
@@ -829,15 +739,10 @@ export const ManageEventFamilies = () => {
                           }}
                         >
                           <Box>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
+                            <Typography variant="caption" color="text.secondary">
                               Family Members
                             </Typography>
-                            <Box
-                              sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}
-                            >
+                            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                               <motion.div whileHover={{ y: -2 }}>
                                 <Box
                                   sx={{
@@ -870,33 +775,27 @@ export const ManageEventFamilies = () => {
                                   </Box>
                                 </motion.div>
                               )}
-                              {scannedFamily.otherMembers &&
-                                scannedFamily.otherMembers.length > 0 && (
-                                  <motion.div whileHover={{ y: -2 }}>
-                                    <Box
-                                      sx={{
-                                        backgroundColor:
-                                          "rgba(52, 199, 89, 0.1)",
-                                        color: "#34c759",
-                                        borderRadius: "20px",
-                                        px: 1.5,
-                                        py: 0.5,
-                                        fontSize: "0.75rem",
-                                        fontWeight: 500,
-                                      }}
-                                    >
-                                      Others:{" "}
-                                      {scannedFamily.otherMembers.length}
-                                    </Box>
-                                  </motion.div>
-                                )}
+                              {scannedFamily.otherMembers && scannedFamily.otherMembers.length > 0 && (
+                                <motion.div whileHover={{ y: -2 }}>
+                                  <Box
+                                    sx={{
+                                      backgroundColor: "rgba(52, 199, 89, 0.1)",
+                                      color: "#34c759",
+                                      borderRadius: "20px",
+                                      px: 1.5,
+                                      py: 0.5,
+                                      fontSize: "0.75rem",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    Others: {scannedFamily.otherMembers.length}
+                                  </Box>
+                                </motion.div>
+                              )}
                             </Box>
                           </Box>
                           <Box>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
+                            <Typography variant="caption" color="text.secondary">
                               Phone
                             </Typography>
                             <Typography variant="body1" fontWeight="medium">
@@ -904,10 +803,7 @@ export const ManageEventFamilies = () => {
                             </Typography>
                           </Box>
                           <Box>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
+                            <Typography variant="caption" color="text.secondary">
                               Location
                             </Typography>
                             <Typography variant="body1" fontWeight="medium">
@@ -915,67 +811,65 @@ export const ManageEventFamilies = () => {
                             </Typography>
                           </Box>
                           <Box>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
+                            <Typography variant="caption" color="text.secondary">
                               Status {scannedFamily.eligible}
                             </Typography>
                             <Typography
                               variant="body1"
                               fontWeight="medium"
                               sx={{
-                                color: scannedFamily.eligible
-                                  ? "success.main"
-                                  : "error.main",
+                                color: scannedFamily.eligible ? "success.main" : "error.main",
                               }}
                             >
-                              {scannedFamily.eligible
-                                ? "Eligible"
-                                : "Ineligible"}
+                              {scannedFamily.eligible ? "Eligible" : "Ineligible"}
                             </Typography>
                           </Box>
                         </Box>
 
                         {event.type === "distribution" && event.items && event.items.length > 0 && (
                           <Box sx={{ mb: 3 }}>
-                            <Typography variant="subtitle2" sx={{ mb: 1 }}>Select Distributed Items</Typography>
+                            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                              Select Distributed Items
+                            </Typography>
                             <Stack spacing={2}>
                               {event.items.map((item, index) => (
-                                <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                                   <FormControlLabel
                                     control={
-                                      <Checkbox 
-                                        checked={selectedItems.some(si => si.itemName === item.name)}
+                                      <Checkbox
+                                        checked={selectedItems.some((si) => si.itemName === item.name)}
                                         onChange={(e) => {
                                           if (e.target.checked) {
-                                            setSelectedItems([...selectedItems, { 
-                                              itemName: item.name,
-                                              quantity: item.quantity || 1,
-                                              unit: item.unit
-                                            }]);
+                                            setSelectedItems([
+                                              ...selectedItems,
+                                              {
+                                                itemName: item.name,
+                                                quantity: item.quantity || 1,
+                                                unit: item.unit,
+                                              },
+                                            ]);
                                           } else {
-                                            setSelectedItems(selectedItems.filter(si => si.itemName !== item.name));
+                                            setSelectedItems(selectedItems.filter((si) => si.itemName !== item.name));
                                           }
                                         }}
                                       />
                                     }
                                     label={item.name}
                                   />
-                                  {selectedItems.some(si => si.itemName === item.name) && (
+                                  {selectedItems.some((si) => si.itemName === item.name) && (
                                     <TextField
                                       type="number"
                                       size="small"
                                       label="Quantity"
-                                      value={selectedItems.find(si => si.itemName === item.name)?.quantity || ""}
+                                      value={selectedItems.find((si) => si.itemName === item.name)?.quantity || ""}
                                       onChange={(e) => {
                                         const value = parseInt(e.target.value);
                                         if (!isNaN(value) && value > 0) {
-                                          setSelectedItems(selectedItems.map(si => 
-                                            si.itemName === item.name 
-                                              ? { ...si, quantity: value }
-                                              : si
-                                          ));
+                                          setSelectedItems(
+                                            selectedItems.map((si) =>
+                                              si.itemName === item.name ? { ...si, quantity: value } : si
+                                            )
+                                          );
                                         }
                                       }}
                                       InputProps={{
@@ -1009,11 +903,7 @@ export const ManageEventFamilies = () => {
                                 gap: 2,
                               }}
                             >
-                              <Typography
-                                variant="h6"
-                                color="error.main"
-                                fontWeight="medium"
-                              >
+                              <Typography variant="h6" color="error.main" fontWeight="medium">
                                 {scanError}
                               </Typography>
                               <Button
@@ -1033,14 +923,8 @@ export const ManageEventFamilies = () => {
                           </motion.div>
                         ) : (
                           <Box sx={{ mt: 3 }}>
-                            <Typography
-                              variant="body1"
-                              textAlign="center"
-                              color="text.secondary"
-                              sx={{ mb: 3 }}
-                            >
-                              Please confirm this is the correct family before
-                              proceeding
+                            <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 3 }}>
+                              Please confirm this is the correct family before proceeding
                             </Typography>
                             {event.type === "collection" && (
                               <Box sx={{ mb: 2 }}>
@@ -1048,18 +932,12 @@ export const ManageEventFamilies = () => {
                                   fullWidth
                                   label="Enter Payment Amount (Rs.)"
                                   placeholder={
-                                    event.targetAmount
-                                      ? `Default: Rs. ${event.targetAmount}`
-                                      : "Enter the amount paid"
+                                    event.targetAmount ? `Default: Rs. ${event.targetAmount}` : "Enter the amount paid"
                                   }
                                   type="number"
                                   value={paymentAmount}
-                                  onChange={(e) =>
-                                    setPaymentAmount(e.target.value)
-                                  }
-                                  onClick={(e) =>
-                                    (e.target as HTMLInputElement).select()
-                                  }
+                                  onChange={(e) => setPaymentAmount(e.target.value)}
+                                  onClick={(e) => (e.target as HTMLInputElement).select()}
                                   InputProps={{
                                     sx: { borderRadius: "8px" },
                                   }}
@@ -1076,13 +954,7 @@ export const ManageEventFamilies = () => {
                                 <Button
                                   variant="contained"
                                   size="large"
-                                  startIcon={
-                                    event?.type === "distribution" ? (
-                                      <AddIcon />
-                                    ) : (
-                                      <QrCodeIcon />
-                                    )
-                                  }
+                                  startIcon={event?.type === "distribution" ? <AddIcon /> : <QrCodeIcon />}
                                   sx={{
                                     borderRadius: "12px",
                                     py: 1.5,
@@ -1094,39 +966,28 @@ export const ManageEventFamilies = () => {
                                   }}
                                   onClick={handleStatusUpdateInScanner}
                                 >
-                                  Mark as{" "}
-                                  {event?.type === "distribution"
-                                    ? "Distributed"
-                                    : "Paid"}
+                                  Mark as {event?.type === "distribution" ? "Distributed" : "Paid"}
                                 </Button>
                               ) : (
                                 //  in eligible families force mark as distributed
-                      
-                                  <Button
-                                    variant="contained"
-                                    size="large"
-                                    startIcon={
-                                      event?.type === "distribution" ? (
-                                        <AddIcon />
-                                      ) : (
-                                        <QrCodeIcon />
-                                      )
-                                    }
-                                    sx={{
-                                      borderRadius: "12px",
-                                      py: 1.5,
-                                      bgcolor: "error.main",
-                                      "&:hover": {
-                                        bgcolor: "error.dark",
-                                      },
-                                      boxShadow:
-                                        "0 4px 12px rgba(211,47,47,0.2)",
-                                    }}
-                                    onClick={handleStatusUpdateInScanner}
-                                  >
-                                    Force Distribute {event?.type === "distribution" ? "Distributed" : "Paid"}
-                                  </Button>
-                               
+
+                                <Button
+                                  variant="contained"
+                                  size="large"
+                                  startIcon={event?.type === "distribution" ? <AddIcon /> : <QrCodeIcon />}
+                                  sx={{
+                                    borderRadius: "12px",
+                                    py: 1.5,
+                                    bgcolor: "error.main",
+                                    "&:hover": {
+                                      bgcolor: "error.dark",
+                                    },
+                                    boxShadow: "0 4px 12px rgba(211,47,47,0.2)",
+                                  }}
+                                  onClick={handleStatusUpdateInScanner}
+                                >
+                                  Force Distribute {event?.type === "distribution" ? "Distributed" : "Paid"}
+                                </Button>
                               )}
                               <Button
                                 variant="outlined"
@@ -1211,14 +1072,8 @@ export const ManageEventFamilies = () => {
                   </IconButton>
 
                   <Box sx={{ mt: 2, textAlign: "center" }}>
-                    <Typography
-                      variant="h5"
-                      fontWeight="bold"
-                      gutterBottom
-                      sx={{ color: "#1d1d1f" }}
-                    >
-                      {scannedFamily.headOfFamily.firstName}{" "}
-                      {scannedFamily.headOfFamily.lastName}
+                    <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ color: "#1d1d1f" }}>
+                      {scannedFamily.headOfFamily.firstName} {scannedFamily.headOfFamily.lastName}
                     </Typography>
 
                     <Chip
@@ -1280,24 +1135,23 @@ export const ManageEventFamilies = () => {
                             </Box>
                           </motion.div>
                         )}
-                        {scannedFamily.otherMembers &&
-                          scannedFamily.otherMembers.length > 0 && (
-                            <motion.div whileHover={{ y: -2 }}>
-                              <Box
-                                sx={{
-                                  backgroundColor: "rgba(52, 199, 89, 0.1)",
-                                  color: "#34c759",
-                                  borderRadius: "20px",
-                                  px: 1.5,
-                                  py: 0.5,
-                                  fontSize: "0.75rem",
-                                  fontWeight: 500,
-                                }}
-                              >
-                                Others: {scannedFamily.otherMembers.length}
-                              </Box>
-                            </motion.div>
-                          )}
+                        {scannedFamily.otherMembers && scannedFamily.otherMembers.length > 0 && (
+                          <motion.div whileHover={{ y: -2 }}>
+                            <Box
+                              sx={{
+                                backgroundColor: "rgba(52, 199, 89, 0.1)",
+                                color: "#34c759",
+                                borderRadius: "20px",
+                                px: 1.5,
+                                py: 0.5,
+                                fontSize: "0.75rem",
+                                fontWeight: 500,
+                              }}
+                            >
+                              Others: {scannedFamily.otherMembers.length}
+                            </Box>
+                          </motion.div>
+                        )}
                       </Box>
                     </Box>
                     <Box>
@@ -1324,9 +1178,7 @@ export const ManageEventFamilies = () => {
                         variant="body1"
                         fontWeight="medium"
                         sx={{
-                          color: scannedFamily.eligible
-                            ? "success.main"
-                            : "error.main",
+                          color: scannedFamily.eligible ? "success.main" : "error.main",
                         }}
                       >
                         {scannedFamily.eligible ? "Eligible" : "Ineligible"}
@@ -1336,43 +1188,46 @@ export const ManageEventFamilies = () => {
 
                   {event.type === "distribution" && event.items && event.items.length > 0 && (
                     <Box sx={{ mb: 3 }}>
-                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Select Distributed Items</Typography>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                        Select Distributed Items
+                      </Typography>
                       <Stack spacing={2}>
                         {event.items.map((item, index) => (
-                          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                             <FormControlLabel
                               control={
-                                <Checkbox 
-                                  checked={selectedItems.some(si => si.itemName === item.name)}
+                                <Checkbox
+                                  checked={selectedItems.some((si) => si.itemName === item.name)}
                                   onChange={(e) => {
                                     if (e.target.checked) {
-                                      setSelectedItems([...selectedItems, { 
-                                        itemName: item.name,
-                                        quantity: item.quantity || 1,
-                                        unit: item.unit
-                                      }]);
+                                      setSelectedItems([
+                                        ...selectedItems,
+                                        {
+                                          itemName: item.name,
+                                          quantity: item.quantity || 1,
+                                          unit: item.unit,
+                                        },
+                                      ]);
                                     } else {
-                                      setSelectedItems(selectedItems.filter(si => si.itemName !== item.name));
+                                      setSelectedItems(selectedItems.filter((si) => si.itemName !== item.name));
                                     }
                                   }}
                                 />
                               }
                               label={item.name}
                             />
-                            {selectedItems.some(si => si.itemName === item.name) && (
+                            {selectedItems.some((si) => si.itemName === item.name) && (
                               <TextField
                                 type="number"
                                 size="small"
                                 label="Quantity"
-                                value={selectedItems.find(si => si.itemName === item.name)?.quantity || ""}
+                                value={selectedItems.find((si) => si.itemName === item.name)?.quantity || ""}
                                 onChange={(e) => {
                                   const value = parseInt(e.target.value);
                                   if (!isNaN(value) && value > 0) {
-                                    setSelectedItems(selectedItems.map(si => 
-                                      si.itemName === item.name 
-                                        ? { ...si, quantity: value }
-                                        : si
-                                    ));
+                                    setSelectedItems(
+                                      selectedItems.map((si) => (si.itemName === item.name ? { ...si, quantity: value } : si))
+                                    );
                                   }
                                 }}
                                 InputProps={{
@@ -1388,11 +1243,7 @@ export const ManageEventFamilies = () => {
                   )}
 
                   {scanError ? (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                       <Box
                         sx={{
                           mt: 2,
@@ -1406,11 +1257,7 @@ export const ManageEventFamilies = () => {
                           gap: 2,
                         }}
                       >
-                        <Typography
-                          variant="h6"
-                          color="error.main"
-                          fontWeight="medium"
-                        >
+                        <Typography variant="h6" color="error.main" fontWeight="medium">
                           {scanError}
                         </Typography>
                         <Button
@@ -1430,12 +1277,7 @@ export const ManageEventFamilies = () => {
                     </motion.div>
                   ) : (
                     <Box sx={{ mt: 3 }}>
-                      <Typography
-                        variant="body1"
-                        textAlign="center"
-                        color="text.secondary"
-                        sx={{ mb: 3 }}
-                      >
+                      <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 3 }}>
                         Update status for this family
                       </Typography>
                       {event.type === "collection" && (
@@ -1444,17 +1286,11 @@ export const ManageEventFamilies = () => {
                             fullWidth
                             required
                             label="Enter Payment Amount (Rs.)"
-                            placeholder={
-                              event.targetAmount
-                                ? `Default: Rs. ${event.targetAmount}`
-                                : "Enter the amount paid"
-                            }
+                            placeholder={event.targetAmount ? `Default: Rs. ${event.targetAmount}` : "Enter the amount paid"}
                             type="number"
                             value={paymentAmount}
                             onChange={(e) => setPaymentAmount(e.target.value)}
-                            onClick={(e) =>
-                              (e.target as HTMLInputElement).select()
-                            }
+                            onClick={(e) => (e.target as HTMLInputElement).select()}
                             InputProps={{
                               sx: { borderRadius: "8px" },
                             }}
@@ -1471,13 +1307,7 @@ export const ManageEventFamilies = () => {
                           <Button
                             variant="contained"
                             size="large"
-                            startIcon={
-                              event?.type === "distribution" ? (
-                                <AddIcon />
-                              ) : (
-                                <QrCodeIcon />
-                              )
-                            }
+                            startIcon={event?.type === "distribution" ? <AddIcon /> : <QrCodeIcon />}
                             sx={{
                               borderRadius: "12px",
                               py: 1.5,
@@ -1489,35 +1319,21 @@ export const ManageEventFamilies = () => {
                             }}
                             onClick={() => {
                               if (scannedFamily) {
-                                handleStatusUpdate(
-                                  scannedFamily.id,
-                                  event?.type === "distribution"
-                                    ? "distributed"
-                                    : "paid"
-                                );
+                                handleStatusUpdate(scannedFamily.id, event?.type === "distribution" ? "distributed" : "paid");
                                 setShowFamilyPanel(false);
                                 setScannedFamily(null);
                                 setScanError(null);
                               }
                             }}
                           >
-                            Mark as{" "}
-                            {event?.type === "distribution"
-                              ? "Distributed"
-                              : "Paid"}
+                            Mark as {event?.type === "distribution" ? "Distributed" : "Paid"}
                           </Button>
                         ) : (
                           <Button
                             variant="contained"
                             color="error"
                             size="large"
-                            startIcon={
-                              event?.type === "distribution" ? (
-                                <AddIcon />
-                              ) : (
-                                <QrCodeIcon />
-                              )
-                            }
+                            startIcon={event?.type === "distribution" ? <AddIcon /> : <QrCodeIcon />}
                             sx={{
                               borderRadius: "12px",
                               py: 1.5,
@@ -1525,22 +1341,14 @@ export const ManageEventFamilies = () => {
                             }}
                             onClick={() => {
                               if (scannedFamily) {
-                                handleStatusUpdate(
-                                  scannedFamily.id,
-                                  event?.type === "distribution"
-                                    ? "distributed"
-                                    : "paid"
-                                );
+                                handleStatusUpdate(scannedFamily.id, event?.type === "distribution" ? "distributed" : "paid");
                                 setShowFamilyPanel(false);
                                 setScannedFamily(null);
                                 setScanError(null);
                               }
                             }}
                           >
-                            Force{" "}
-                            {event?.type === "distribution"
-                              ? "Distribute"
-                              : "Mark Paid"}
+                            Force {event?.type === "distribution" ? "Distribute" : "Mark Paid"}
                           </Button>
                         )}
                         <Button

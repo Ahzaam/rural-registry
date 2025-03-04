@@ -7,24 +7,16 @@ import {
   Skeleton,
   Typography,
   Collapse,
-  IconButton,
-  Paper,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  TextField,
   Switch,
-  Button,
-  Chip,
-  FormGroup,
   FormControlLabel,
-  Checkbox,
   Slider,
-  Stack,
   Grid,
 } from "@mui/material";
-import FilterListIcon from "@mui/icons-material/FilterList";
+
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import { getFamilies, deleteFamily } from "../services/familyService";
@@ -35,6 +27,7 @@ import FamilyCard from "./dashboard/FamilyCard";
 import FamilyTable from "./dashboard/FamilyTable";
 import AnimatedPage from "./common/AnimatedPage";
 import AnimatedContainer from "./common/AnimatedContainer";
+import { User } from "../types/types";
 
 const Dashboard: React.FC = () => {
   const theme = useTheme();
@@ -95,55 +88,31 @@ const Dashboard: React.FC = () => {
       const matchesSearch = searchTerm
         ? family.homeId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           family.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          family.headOfFamily?.firstName
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          family.headOfFamily?.lastName
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase())
+          family.headOfFamily?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          family.headOfFamily?.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
         : true;
 
-      const matchesLandOwnership = filters.landOwnership
-        ? family.landOwnership === filters.landOwnership
-        : true;
+      const matchesLandOwnership = filters.landOwnership ? family.landOwnership === filters.landOwnership : true;
 
       // Handle different income formats (e.g., "10 000" or "10, 000, 000" or "LKR 250,000")
-      const normalizedIncome = family.income
-        ? parseInt(family.income.replace(/[^0-9]/g, ""))
-        : 0;
+      const normalizedIncome = family.income ? parseInt(family.income.replace(/[^0-9]/g, "")) : 0;
 
-      const matchesIncome =
-        normalizedIncome >= filters.incomeRange[0] &&
-        normalizedIncome <= filters.incomeRange[1];
+      const matchesIncome = normalizedIncome >= filters.incomeRange[0] && normalizedIncome <= filters.incomeRange[1];
 
-      const matchesChildren =
-        !filters.hasChildren || (family.children && family.children.length > 0);
+      const matchesChildren = !filters.hasChildren || (family.children && family.children.length > 0);
       const matchesSpouse = !filters.hasSpouse || family.spouse;
-      const matchesOtherMembers =
-        !filters.hasOtherMembers ||
-        (family.otherMembers && family.otherMembers.length > 0);
+      const matchesOtherMembers = !filters.hasOtherMembers || (family.otherMembers && family.otherMembers.length > 0);
 
-      const workLocations = [
-        family.headOfFamily?.workLocation,
-        family.spouse?.workLocation,
-      ].filter(Boolean);
+      const workLocations = [family.headOfFamily?.workLocation, family.spouse?.workLocation].filter(Boolean);
 
       const matchesWorkLocation =
         !filters.workLocationType ||
-        workLocations.some((loc) =>
-          loc?.toLowerCase().includes(filters.workLocationType.toLowerCase())
-        );
+        workLocations.some((loc) => loc?.toLowerCase().includes(filters.workLocationType.toLowerCase()));
 
-      const educationLevels = [
-        family.headOfFamily?.education,
-        family.spouse?.education,
-      ].filter(Boolean);
+      const educationLevels = [family.headOfFamily?.education, family.spouse?.education].filter(Boolean);
 
       const matchesEducation =
-        !filters.education ||
-        educationLevels.some(
-          (edu) => edu?.toLowerCase() === filters.education.toLowerCase()
-        );
+        !filters.education || educationLevels.some((edu) => edu?.toLowerCase() === filters.education.toLowerCase());
 
       // Add age filtering logic
       const familyMembers = [
@@ -161,10 +130,7 @@ const Dashboard: React.FC = () => {
         const monthDiff = today.getMonth() - birthDate.getMonth();
 
         // Adjust age if birthday hasn't occurred this year
-        if (
-          monthDiff < 0 ||
-          (monthDiff === 0 && today.getDate() < birthDate.getDate())
-        ) {
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
           age--;
         }
 
@@ -219,12 +185,7 @@ const Dashboard: React.FC = () => {
       >
         <Box sx={{ p: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-            <Skeleton
-              variant="circular"
-              width={40}
-              height={40}
-              sx={{ mr: 2 }}
-            />
+            <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
             <Box sx={{ width: "100%" }}>
               <Skeleton width="60%" height={28} />
               <Skeleton width="40%" height={20} sx={{ mt: 1 }} />
@@ -261,7 +222,7 @@ const Dashboard: React.FC = () => {
           >
             {/* Header Section with animation */}
             <AnimatedContainer animation="slide" delay={0.1}>
-              <DashboardHeader currentUser={currentUser} />
+              <DashboardHeader currentUser={currentUser as User} />
             </AnimatedContainer>
 
             {/* Search and Add Section with animation */}
@@ -273,8 +234,6 @@ const Dashboard: React.FC = () => {
                   onFilterClick={() => setShowFilters(!showFilters)}
                 />
               </Box>
-
-        
 
               {/* Filter Panel - Apple-inspired Design */}
               <Collapse in={showFilters}>
@@ -322,15 +281,11 @@ const Dashboard: React.FC = () => {
                           },
                         }}
                       >
-                        <InputLabel sx={{ fontWeight: 500, color: "#86868b" }}>
-                          Land Ownership
-                        </InputLabel>
+                        <InputLabel sx={{ fontWeight: 500, color: "#86868b" }}>Land Ownership</InputLabel>
                         <Select
                           value={filters.landOwnership}
                           label="Land Ownership"
-                          onChange={(e) =>
-                            handleFilterChange("landOwnership", e.target.value)
-                          }
+                          onChange={(e) => handleFilterChange("landOwnership", e.target.value)}
                         >
                           <MenuItem value="">All</MenuItem>
                           <MenuItem value="owned">Owned</MenuItem>
@@ -358,29 +313,17 @@ const Dashboard: React.FC = () => {
                           },
                         }}
                       >
-                        <InputLabel sx={{ fontWeight: 500, color: "#86868b" }}>
-                          Education Level
-                        </InputLabel>
+                        <InputLabel sx={{ fontWeight: 500, color: "#86868b" }}>Education Level</InputLabel>
                         <Select
                           value={filters.education}
                           label="Education Level"
-                          onChange={(e) =>
-                            handleFilterChange("education", e.target.value)
-                          }
+                          onChange={(e) => handleFilterChange("education", e.target.value)}
                         >
                           <MenuItem value="">All</MenuItem>
-                          <MenuItem value="ordinary level">
-                            Ordinary Level
-                          </MenuItem>
-                          <MenuItem value="advance level">
-                            Advance Level
-                          </MenuItem>
-                          <MenuItem value="bachelor's degree">
-                            Bachelor's Degree
-                          </MenuItem>
-                          <MenuItem value="master's degree">
-                            Master's Degree
-                          </MenuItem>
+                          <MenuItem value="ordinary level">Ordinary Level</MenuItem>
+                          <MenuItem value="advance level">Advance Level</MenuItem>
+                          <MenuItem value="bachelor's degree">Bachelor's Degree</MenuItem>
+                          <MenuItem value="master's degree">Master's Degree</MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>
@@ -403,18 +346,11 @@ const Dashboard: React.FC = () => {
                           },
                         }}
                       >
-                        <InputLabel sx={{ fontWeight: 500, color: "#86868b" }}>
-                          Work Location
-                        </InputLabel>
+                        <InputLabel sx={{ fontWeight: 500, color: "#86868b" }}>Work Location</InputLabel>
                         <Select
                           value={filters.workLocationType}
                           label="Work Location"
-                          onChange={(e) =>
-                            handleFilterChange(
-                              "workLocationType",
-                              e.target.value
-                            )
-                          }
+                          onChange={(e) => handleFilterChange("workLocationType", e.target.value)}
                         >
                           <MenuItem value="">All</MenuItem>
                           <MenuItem value="home">Home</MenuItem>
@@ -454,14 +390,12 @@ const Dashboard: React.FC = () => {
                             fontWeight: 400,
                           }}
                         >
-                          Rs. {(filters.incomeRange[0] / 100000).toFixed(1)}L -
-                          Rs. {(filters.incomeRange[1] / 100000).toFixed(1)}L
+                          Rs. {(filters.incomeRange[0] / 100000).toFixed(1)}L - Rs. {(filters.incomeRange[1] / 100000).toFixed(1)}
+                          L
                         </Typography>
                         <Slider
                           value={filters.incomeRange}
-                          onChange={(_, value) =>
-                            handleFilterChange("incomeRange", value)
-                          }
+                          onChange={(_, value) => handleFilterChange("incomeRange", value)}
                           min={0}
                           max={2000000}
                           step={10000}
@@ -473,10 +407,9 @@ const Dashboard: React.FC = () => {
                               backgroundColor: "#fff",
                               border: "2px solid currentColor",
                               boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                              "&:focus, &:hover, &.Mui-active, &.Mui-focusVisible":
-                                {
-                                  boxShadow: "0 3px 10px rgba(0, 0, 0, 0.15)",
-                                },
+                              "&:focus, &:hover, &.Mui-active, &.Mui-focusVisible": {
+                                boxShadow: "0 3px 10px rgba(0, 0, 0, 0.15)",
+                              },
                             },
                             "& .MuiSlider-track": {
                               height: 4,
@@ -525,9 +458,7 @@ const Dashboard: React.FC = () => {
                         </Typography>
                         <Slider
                           value={filters.ageRange}
-                          onChange={(_, value) =>
-                            handleFilterChange("ageRange", value)
-                          }
+                          onChange={(_, value) => handleFilterChange("ageRange", value)}
                           min={0}
                           max={100}
                           step={1}
@@ -539,10 +470,9 @@ const Dashboard: React.FC = () => {
                               backgroundColor: "#fff",
                               border: "2px solid currentColor",
                               boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                              "&:focus, &:hover, &.Mui-active, &.Mui-focusVisible":
-                                {
-                                  boxShadow: "0 3px 10px rgba(0, 0, 0, 0.15)",
-                                },
+                              "&:focus, &:hover, &.Mui-active, &.Mui-focusVisible": {
+                                boxShadow: "0 3px 10px rgba(0, 0, 0, 0.15)",
+                              },
                             },
                             "& .MuiSlider-track": {
                               height: 4,
@@ -592,34 +522,21 @@ const Dashboard: React.FC = () => {
                                 control={
                                   <Switch
                                     checked={filters[field]}
-                                    onChange={(e) =>
-                                      handleFilterChange(
-                                        field,
-                                        e.target.checked
-                                      )
-                                    }
+                                    onChange={(e) => handleFilterChange(field, e.target.checked)}
                                     sx={{
                                       "& .MuiSwitch-switchBase.Mui-checked": {
                                         color: "#0071e3",
                                         "&:hover": {
-                                          backgroundColor:
-                                            "rgba(0, 113, 227, 0.08)",
+                                          backgroundColor: "rgba(0, 113, 227, 0.08)",
                                         },
                                       },
-                                      "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
-                                        {
-                                          backgroundColor: "#0071e3",
-                                        },
+                                      "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                                        backgroundColor: "#0071e3",
+                                      },
                                     }}
                                   />
                                 }
-                                label={
-                                  <Typography
-                                    sx={{ color: "#1d1d1f", fontWeight: 400 }}
-                                  >
-                                    {label}
-                                  </Typography>
-                                }
+                                label={<Typography sx={{ color: "#1d1d1f", fontWeight: 400 }}>{label}</Typography>}
                               />
                             </Grid>
                           ))}
@@ -646,23 +563,14 @@ const Dashboard: React.FC = () => {
             <AnimatedContainer animation="fade" delay={0.3}>
               {loading ? (
                 <Box sx={{ my: 2 }}>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                  >
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
                     {isMobile ? (
                       renderSkeletons()
                     ) : (
                       <Box sx={skeletonContainerStyle}>
                         <Skeleton width="100%" height={50} sx={{ mb: 2 }} />
                         {Array.from({ length: 5 }).map((_, index) => (
-                          <Skeleton
-                            key={index}
-                            width="100%"
-                            height={60}
-                            sx={{ mb: 1 }}
-                          />
+                          <Skeleton key={index} width="100%" height={60} sx={{ mb: 1 }} />
                         ))}
                       </Box>
                     )}
@@ -673,11 +581,7 @@ const Dashboard: React.FC = () => {
                   {/* Mobile Cards View */}
                   {isMobile ? (
                     filteredFamilies.length > 0 ? (
-                      <motion.div
-                        variants={listVariants}
-                        initial="hidden"
-                        animate="show"
-                      >
+                      <motion.div variants={listVariants} initial="hidden" animate="show">
                         <AnimatePresence mode="popLayout">
                           {filteredFamilies.map((family) => (
                             <motion.div
@@ -706,20 +610,11 @@ const Dashboard: React.FC = () => {
                         transition={{ duration: 0.5 }}
                         style={emptyStateStyle}
                       >
-                        <Typography
-                          variant="h5"
-                          sx={{ mb: 1, color: theme.palette.text.primary }}
-                        >
+                        <Typography variant="h5" sx={{ mb: 1, color: theme.palette.text.primary }}>
                           No families found
                         </Typography>
-                        <Typography
-                          variant="body1"
-                          color="textSecondary"
-                          align="center"
-                        >
-                          {searchTerm
-                            ? "Try adjusting your search criteria"
-                            : "Add a new family to get started"}
+                        <Typography variant="body1" color="textSecondary" align="center">
+                          {searchTerm ? "Try adjusting your search criteria" : "Add a new family to get started"}
                         </Typography>
                       </motion.div>
                     )
@@ -743,31 +638,31 @@ const Dashboard: React.FC = () => {
   );
 };
 
-// Styled components and styles
-const filterSelectStyle = {
-  backgroundColor: "rgba(255, 255, 255, 0.8)",
-  borderRadius: "12px",
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "12px",
-  },
-};
+// // Styled components and styles
+// const filterSelectStyle = {
+//   backgroundColor: "rgba(255, 255, 255, 0.8)",
+//   borderRadius: "12px",
+//   "& .MuiOutlinedInput-root": {
+//     borderRadius: "12px",
+//   },
+// };
 
-const sliderContainerStyle = {
-  p: 2,
-  borderRadius: "12px",
-  backgroundColor: "rgba(255, 255, 255, 0.8)",
-  transition: "all 0.2s",
-  "&:hover": {
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-  },
-};
+// const sliderContainerStyle = {
+//   p: 2,
+//   borderRadius: "12px",
+//   backgroundColor: "rgba(255, 255, 255, 0.8)",
+//   transition: "all 0.2s",
+//   "&:hover": {
+//     backgroundColor: "rgba(255, 255, 255, 0.95)",
+//     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+//   },
+// };
 
-const sliderLabelStyle = {
-  fontWeight: 500,
-  color: "text.primary",
-  mb: 2,
-};
+// const sliderLabelStyle = {
+//   fontWeight: 500,
+//   color: "text.primary",
+//   mb: 2,
+// };
 const emptyStateStyle = {
   display: "flex",
   flexDirection: "column" as const,
@@ -780,46 +675,46 @@ const emptyStateStyle = {
   border: "1px solid rgba(255, 255, 255, 0.3)",
   boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)",
 };
-const sliderStyle = {
-  "& .MuiSlider-thumb": {
-    width: 14,
-    height: 14,
-    transition: "all 0.2s",
-    "&:hover": {
-      boxShadow: "0 0 0 8px rgba(25, 118, 210, 0.16)",
-    },
-  },
-  "& .MuiSlider-rail": {
-    opacity: 0.32,
-  },
-};
+// const sliderStyle = {
+//   "& .MuiSlider-thumb": {
+//     width: 14,
+//     height: 14,
+//     transition: "all 0.2s",
+//     "&:hover": {
+//       boxShadow: "0 0 0 8px rgba(25, 118, 210, 0.16)",
+//     },
+//   },
+//   "& .MuiSlider-rail": {
+//     opacity: 0.32,
+//   },
+// };
 
-const checkboxGroupStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  gap: 2,
-  p: 2,
-  borderRadius: "12px",
-  backgroundColor: "rgba(255, 255, 255, 0.8)",
-  transition: "all 0.2s",
-  "&:hover": {
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-  },
-};
+// const checkboxGroupStyle = {
+//   display: "flex",
+//   flexWrap: "wrap",
+//   gap: 2,
+//   p: 2,
+//   borderRadius: "12px",
+//   backgroundColor: "rgba(255, 255, 255, 0.8)",
+//   transition: "all 0.2s",
+//   "&:hover": {
+//     backgroundColor: "rgba(255, 255, 255, 0.95)",
+//     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+//   },
+// };
 
-const checkboxStyle = {
-  "&.Mui-checked": {
-    color: "primary.main",
-  },
-};
+// const checkboxStyle = {
+//   "&.Mui-checked": {
+//     color: "primary.main",
+//   },
+// };
 
-const checkboxLabelStyle = {
-  "& .MuiTypography-root": {
-    fontSize: "0.9rem",
-    fontWeight: 500,
-  },
-};
+// const checkboxLabelStyle = {
+//   "& .MuiTypography-root": {
+//     fontSize: "0.9rem",
+//     fontWeight: 500,
+//   },
+// };
 
 const skeletonContainerStyle = {
   backgroundColor: "rgba(255, 255, 255, 0.8)",

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
-import { Box, Paper, Typography, Tooltip, CircularProgress, Snackbar, Alert, Button, Stack } from '@mui/material';
-import { Download as DownloadIcon, ContentCopy as CopyIcon, Check as CheckIcon } from '@mui/icons-material';
-import { Family } from '../../types/types';
-import { motion } from 'framer-motion';
-import AnimatedButton from '../common/AnimatedButton';
-import { generateProfileToken } from '../../services/profileLinkService';
+import React, { useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
+import { Box, Paper, Typography, Tooltip, Alert, Stack } from "@mui/material";
+import { Download as DownloadIcon, ContentCopy as CopyIcon, Check as CheckIcon } from "@mui/icons-material";
+import { Family } from "../../types/types";
+import { motion } from "framer-motion";
+import AnimatedButton from "../common/AnimatedButton";
+import { generateProfileToken } from "../../services/profileLinkService";
 
 interface QRCodeDisplayProps {
   family: Family;
@@ -17,17 +17,17 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({ family }) => {
   const [generating, setGenerating] = useState(false);
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+
   const familyCode = `${family.homeId}-${family.id}`;
   const baseUrl = `${window.location.origin}`;
   const verifyUrl = generatedToken ? `${baseUrl}/verify/${generatedToken}` : null;
 
   const handleDownload = async () => {
     setIsDownloading(true);
-    const canvas = document.querySelector('canvas');
+    const canvas = document.querySelector("canvas");
     if (canvas) {
-      const pngUrl = canvas.toDataURL('image/png');
-      const downloadLink = document.createElement('a');
+      const pngUrl = canvas.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
       downloadLink.href = pngUrl;
       downloadLink.download = `family-${familyCode}.png`;
       document.body.appendChild(downloadLink);
@@ -39,13 +39,13 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({ family }) => {
 
   const handleCopy = async () => {
     if (!verifyUrl) return;
-    
+
     try {
       await navigator.clipboard.writeText(verifyUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error("Failed to copy:", err);
     }
   };
 
@@ -53,20 +53,16 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({ family }) => {
     try {
       setError(null);
       setGenerating(true);
-      console.log('Generating profile token for family:', {
+      console.log("Generating profile token for family:", {
         familyId: family.id,
-        contact: family.headOfFamily.contact
+        contact: family.headOfFamily.contact,
       });
-      const token = await generateProfileToken(
-        family.id,
-        family.headOfFamily.contact,
-        family.headOfFamily.nic
-      );
-      console.log('Token generated successfully:', token);
+      const token = await generateProfileToken(family.id, family.headOfFamily.contact!, family.headOfFamily.nic);
+      console.log("Token generated successfully:", token);
       setGeneratedToken(token);
     } catch (err) {
-      console.error('Error generating profile link:', err);
-      setError(err instanceof Error ? err.message : 'Failed to generate profile link');
+      console.error("Error generating profile link:", err);
+      setError(err instanceof Error ? err.message : "Failed to generate profile link");
     } finally {
       setGenerating(false);
     }
@@ -79,18 +75,12 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({ family }) => {
           Family Profile Access
         </Typography>
       </Box>
-      
+
       <Box sx={{ p: 4 }}>
         <Stack spacing={3}>
-          <Box sx={{ textAlign: 'center' }}>
-            <QRCodeSVG
-              value={familyCode}
-              size={200}
-              level="H"
-              includeMargin
-              className="mx-auto"
-            />
-            <Typography variant="subtitle2" sx={{ mt: 2, color: '#86868b' }}>
+          <Box sx={{ textAlign: "center" }}>
+            <QRCodeSVG value={familyCode} size={200} level="H" includeMargin className="mx-auto" />
+            <Typography variant="subtitle2" sx={{ mt: 2, color: "#86868b" }}>
               Family Code: {familyCode}
             </Typography>
           </Box>
@@ -102,62 +92,58 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({ family }) => {
               onClick={handleGenerateLink}
               loading={generating}
               sx={{
-                borderColor: '#0070c9',
-                color: '#0070c9',
-                borderRadius: '12px',
+                borderColor: "#0070c9",
+                color: "#0070c9",
+                borderRadius: "12px",
                 py: 1.5,
-                '&:hover': {
-                  borderColor: '#005ea3',
-                  backgroundColor: 'rgba(0, 112, 201, 0.04)',
+                "&:hover": {
+                  borderColor: "#005ea3",
+                  backgroundColor: "rgba(0, 112, 201, 0.04)",
                 },
               }}
             >
               Generate Profile Link
             </AnimatedButton>
-            
+
             {error && (
-              <Alert severity="error" sx={{ mt: 2, borderRadius: '12px' }}>
+              <Alert severity="error" sx={{ mt: 2, borderRadius: "12px" }}>
                 {error}
               </Alert>
             )}
-            
+
             {verifyUrl && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                 <Paper
                   variant="outlined"
                   sx={{
                     mt: 2,
                     p: 2,
-                    borderRadius: '12px',
-                    borderColor: 'rgba(0,0,0,0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 1
+                    borderRadius: "12px",
+                    borderColor: "rgba(0,0,0,0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 1,
                   }}
                 >
                   <Typography
                     variant="body2"
                     sx={{
-                      color: '#1d1d1f',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
+                      color: "#1d1d1f",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {verifyUrl}
                   </Typography>
-                  <Tooltip title={copied ? 'Copied!' : 'Copy Link'}>
+                  <Tooltip title={copied ? "Copied!" : "Copy Link"}>
                     <AnimatedButton
                       size="small"
                       onClick={handleCopy}
                       sx={{
-                        minWidth: 'unset',
-                        color: copied ? '#34c759' : '#0070c9'
+                        minWidth: "unset",
+                        color: copied ? "#34c759" : "#0070c9",
                       }}
                     >
                       {copied ? <CheckIcon /> : <CopyIcon />}
@@ -175,11 +161,11 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({ family }) => {
             startIcon={<DownloadIcon />}
             loading={isDownloading}
             sx={{
-              bgcolor: '#0070c9',
-              borderRadius: '12px',
+              bgcolor: "#0070c9",
+              borderRadius: "12px",
               py: 1.5,
-              '&:hover': {
-                bgcolor: '#005ea3',
+              "&:hover": {
+                bgcolor: "#005ea3",
               },
             }}
           >

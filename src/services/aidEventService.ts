@@ -1,6 +1,6 @@
-import { 
-  collection, 
-  addDoc, 
+import {
+  collection,
+  addDoc,
   updateDoc,
   doc,
   getDocs,
@@ -10,15 +10,14 @@ import {
   orderBy,
   serverTimestamp,
   onSnapshot,
-  Timestamp
-} from 'firebase/firestore';
-import { db } from '../firebase/config';
-import { AidEvent, Distribution, MonthlyContribution, PaymentRecord } from '../types/types';
+  Timestamp,
+} from "firebase/firestore";
+import { db } from "../firebase/config";
+import { AidEvent, Distribution, MonthlyContribution } from "../types/types";
 
-
-const EVENTS_COLLECTION = 'aid_events';
-const DISTRIBUTIONS_COLLECTION = 'distributions';
-const CONTRIBUTIONS_COLLECTION = 'contributions';
+const EVENTS_COLLECTION = "aid_events";
+const DISTRIBUTIONS_COLLECTION = "distributions";
+const CONTRIBUTIONS_COLLECTION = "contributions";
 
 export const createAidEvent = async (event: Omit<AidEvent, "id" | "createdAt" | "updatedAt">) => {
   const now = Timestamp.now();
@@ -62,17 +61,17 @@ export const getAidEvent = async (eventId: string): Promise<AidEvent> => {
   } as AidEvent;
 };
 
-export const createDistribution = async (distribution: Omit<Distribution, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+export const createDistribution = async (distribution: Omit<Distribution, "id" | "createdAt" | "updatedAt">): Promise<string> => {
   try {
     const distributionWithTimestamp = {
       ...distribution,
       createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
     };
     const docRef = await addDoc(collection(db, DISTRIBUTIONS_COLLECTION), distributionWithTimestamp);
     return docRef.id;
   } catch (error) {
-    console.error('Error creating distribution:', error);
+    console.error("Error creating distribution:", error);
     throw error;
   }
 };
@@ -82,10 +81,10 @@ export const updateDistribution = async (id: string, distribution: Partial<Distr
     const distributionRef = doc(db, DISTRIBUTIONS_COLLECTION, id);
     await updateDoc(distributionRef, {
       ...distribution,
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
     });
   } catch (error) {
-    console.error('Error updating distribution:', error);
+    console.error("Error updating distribution:", error);
     throw error;
   }
 };
@@ -99,40 +98,38 @@ export const getDistributionsByEvent = async (eventId: string) => {
     distributedAt: doc.data().distributedAt ? (doc.data().distributedAt as Timestamp).toDate() : "",
     createdAt: (doc.data().createdAt as Timestamp).toDate(),
     updatedAt: (doc.data().updatedAt as Timestamp).toDate(),
-  })) as Distribution[];
+  })) as unknown as Distribution[];
 };
 
 export const getDistribution = async (eventId: string, familyId: string): Promise<Distribution | null> => {
   try {
-    const q = query(
-      collection(db, DISTRIBUTIONS_COLLECTION),
-      where('eventId', '==', eventId),
-      where('familyId', '==', familyId)
-    );
+    const q = query(collection(db, DISTRIBUTIONS_COLLECTION), where("eventId", "==", eventId), where("familyId", "==", familyId));
     const snapshot = await getDocs(q);
     if (snapshot.empty) return null;
     const doc = snapshot.docs[0];
     return {
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     } as Distribution;
   } catch (error) {
-    console.error('Error getting distribution:', error);
+    console.error("Error getting distribution:", error);
     throw error;
   }
 };
 
-export const createContribution = async (contribution: Omit<MonthlyContribution, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+export const createContribution = async (
+  contribution: Omit<MonthlyContribution, "id" | "createdAt" | "updatedAt">
+): Promise<string> => {
   try {
     const contributionWithTimestamp = {
       ...contribution,
       createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
     };
     const docRef = await addDoc(collection(db, CONTRIBUTIONS_COLLECTION), contributionWithTimestamp);
     return docRef.id;
   } catch (error) {
-    console.error('Error creating contribution:', error);
+    console.error("Error creating contribution:", error);
     throw error;
   }
 };
@@ -142,10 +139,10 @@ export const updateContribution = async (id: string, contribution: Partial<Month
     const contributionRef = doc(db, CONTRIBUTIONS_COLLECTION, id);
     await updateDoc(contributionRef, {
       ...contribution,
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
     });
   } catch (error) {
-    console.error('Error updating contribution:', error);
+    console.error("Error updating contribution:", error);
     throw error;
   }
 };
@@ -163,49 +160,41 @@ export const getContributionsByEvent = async (eventId: string) => {
 
 export const getContribution = async (eventId: string, familyId: string): Promise<MonthlyContribution | null> => {
   try {
-    const q = query(
-      collection(db, CONTRIBUTIONS_COLLECTION),
-      where('eventId', '==', eventId),
-      where('familyId', '==', familyId)
-    );
+    const q = query(collection(db, CONTRIBUTIONS_COLLECTION), where("eventId", "==", eventId), where("familyId", "==", familyId));
     const snapshot = await getDocs(q);
     if (snapshot.empty) return null;
     const doc = snapshot.docs[0];
     return {
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     } as MonthlyContribution;
   } catch (error) {
-    console.error('Error getting contribution:', error);
+    console.error("Error getting contribution:", error);
     throw error;
   }
 };
 
 export const subscribeToEventRecords = (
   eventId: string,
-  type: 'distribution' | 'collection',
+  type: "distribution" | "collection",
   callback: (records: (Distribution | MonthlyContribution)[]) => void
 ): (() => void) => {
-  const collectionName = type === 'distribution' ? DISTRIBUTIONS_COLLECTION : CONTRIBUTIONS_COLLECTION;
-  const q = query(
-    collection(db, collectionName),
-    where('eventId', '==', eventId),
-    orderBy('createdAt', 'desc')
-  );
+  const collectionName = type === "distribution" ? DISTRIBUTIONS_COLLECTION : CONTRIBUTIONS_COLLECTION;
+  const q = query(collection(db, collectionName), where("eventId", "==", eventId), orderBy("createdAt", "desc"));
 
   return onSnapshot(q, (snapshot) => {
-    const records = snapshot.docs.map(doc => ({
+    const records = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     })) as (Distribution | MonthlyContribution)[];
     callback(records);
   });
 };
 
 export const updateAidEvent = async (eventId: string, event: AidEvent): Promise<void> => {
-  const eventRef = doc(db, 'aidEvents', eventId);
+  const eventRef = doc(db, "aidEvents", eventId);
   await updateDoc(eventRef, {
     ...event,
-    updatedAt: Timestamp.now()
+    updatedAt: Timestamp.now(),
   });
 };

@@ -69,7 +69,7 @@ const Login: React.FC = () => {
         py: 4,
       }}
     >
-      <Container maxWidth="sm">
+      <Container maxWidth="xs"> {/* Changed from "sm" to "xs" to reduce width */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -197,7 +197,7 @@ const Login: React.FC = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
             >
-              <Typography variant="body2" className="mt-10 text-center text-gray-500 text-sm">
+              <Typography variant="body2" sx={{marginTop:"20px"}} className="mt-10 text-center text-gray-500 text-sm">
                 Only authorized administrators can access this system.
               </Typography>
             </motion.div>
@@ -205,8 +205,8 @@ const Login: React.FC = () => {
             {/* Software Company Credit */}
             <Box sx={{ mt: 4, pt: 4, borderTop: '1px solid rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ width: 24, height: 24 }}>
-                  <svg width="24" height="24" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                <Box sx={{ width: 35, height: 35 }}>
+                  <svg width="35" height="35" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                       <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="#c6a55c" />
@@ -219,13 +219,13 @@ const Login: React.FC = () => {
                           stroke-width="24" 
                           fill="none" 
                           stroke-linecap="round"/>
-                    <line x1="295" y1="250" x2="350" y2="250" 
+                    <line x1="295" y1="250" x2="320" y2="250" 
                           stroke="url(#goldGradient)" 
                           stroke-width="24" 
                           stroke-linecap="round"/>
                   </svg>
                 </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}> {/* Changed from "flex-start" to "center" */}
                   <Typography 
                     variant="caption" 
                     sx={{ 
